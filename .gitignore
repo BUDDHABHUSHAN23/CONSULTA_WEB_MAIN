@@ -1,0 +1,43 @@
+# General
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.local
+.env.*.local
+.vscode/
+.idea/
+coverage/
+.eslintcache
+
+# Backend (Python/FastAPI)
+backend/.env
+backend/.venv/
+backend/__pycache__/
+backend/**/*.pyc
+backend/.mypy_cache/
+backend/.pytest_cache/
+backend/.ruff_cache/
+
+# Frontend (React/Node)
+frontend/.env
+frontend/node_modules/
+frontend/build/
+frontend/.cache/
+frontend/.parcel-cache/
+frontend/.pnp
+frontend/.pnp.js
+frontend/pnpm-lock.yaml
+frontend/yarn-error.log
+frontend/.sass-cache/
+frontend/.eslintcache
+
+# Docker/ops
+.env.docker
+docker-compose.override.yml
+
+# OS/Editor junk
+*.swp
+*.swo
+*.tmp
+*.bak

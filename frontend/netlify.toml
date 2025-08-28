@@ -1,0 +1,15 @@
+[build]
+  publish = "build"
+  command = "npm ci && npm run build"
+  base = "frontend"
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://api.consulta.in/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
