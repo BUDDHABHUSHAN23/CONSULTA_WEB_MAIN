@@ -74,5 +74,5 @@ npm run start
 Tip:
 If port 3000 is busy: press Y to use another port, or run:
 Get-Process -Name node | Stop-Process -Force
-Verify backend: open http://localhost:8000/api/
+Verify backend: open http://localhost:8000/api/ 
 App runs at: http://localhost:3000

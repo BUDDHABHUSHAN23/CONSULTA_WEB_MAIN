@@ -15,7 +15,9 @@ const Contact = () => {
     name: "",
     email: "",
     phone: "",
-    message: ""
+    message: "",
+    industry: "",
+    company : "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -50,7 +52,7 @@ const Contact = () => {
       });
       
       // Reset form
-      setFormData({ name: "", email: "", phone: "", message: "" });
+      setFormData({ name: "", email: "", phone: "", message: "",   message: "",industry: "",company : "" });
     } catch (error) {
       toast({
         title: "Error",
@@ -89,9 +91,20 @@ const Contact = () => {
             </h1>
 
             <p className="text-xl text-gray-600 max-w-3xl leading-relaxed font-light">
-              Ready to transform your operations with cutting-edge automation? 
-              Let's discuss how we can help you achieve your goals.
-            </p>
+            Ready to transform your operations with cutting-edge automation? We're here to partner with you every step of the way.
+            <span className="font-semibold text-gray-900"> Let's explore how our solutions </span>can help you achieve your specific <span className="font-semibold text-gray-900"> goals </span> and drive meaningful results for your business.
+            </p> 
+            {/* <p className="text-xl text-gray-600 max-w-3xl leading-relaxed font-light">
+            Ready to transform your operations with 
+            <span className="font-semibold text-gray-900"> cutting-edge automation</span>? 
+            We're here to partner with you every step of the way. 
+            Let's explore how our solutions can help you achieve 
+            <span className="text-indigo-600 font-medium"> your specific goals</span> 
+            and drive 
+            <span className="underline decoration-indigo-500"> meaningful results</span> 
+            for your business.
+          </p> */}
+
           </div>
         </div>
       </section>
@@ -171,6 +184,7 @@ const Contact = () => {
                     </div>
                   </div>
 
+                  {/* Also i want to impliement the more functionality of the website  */}
                   {/* Hours */}
                   <div className="group">
                     <div className="flex items-start space-x-4 p-6 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-all duration-300 hover:shadow-md">
@@ -238,6 +252,40 @@ const Contact = () => {
                     />
                   </div>
 
+
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                      Industry *
+                    </label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      value={formData.industry}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all duration-300"
+                      placeholder="e.g., IT, Manufacturing, Healthcare"
+                    />
+                  </div>
+
+
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                      Company *
+                    </label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      value={formData.industry}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all duration-300"
+                      placeholder="e.g., Google, Infosys, Reliance"
+                    />
+                  </div>
+
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
                       Phone Number *
@@ -250,7 +298,7 @@ const Contact = () => {
                       value={formData.phone}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all duration-300"
-                      placeholder="+91 98765 43210"
+                      placeholder="+91 98**** *210"
                     />
                   </div>
 

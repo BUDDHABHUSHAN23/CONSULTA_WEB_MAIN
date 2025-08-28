@@ -61,8 +61,9 @@ const Navbar = () => {
               to="/contact"
               className="ml-6 px-6 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-all duration-300 hover:shadow-lg hover:scale-105"
             >
-              Get Started
+              Get Started     
             </Link>
+            {/* here we will need to add things such are new button or the refactoring the button  */}
           </div>
 
           {/* Mobile Menu Button */}

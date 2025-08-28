@@ -136,7 +136,7 @@ export const companyInfo = {
 
 export const stats = [
   {
-    number: "15+",
+    number: "25+",
     label: "Years of Experience",
     description: "Delivering automation solutions"
   },
