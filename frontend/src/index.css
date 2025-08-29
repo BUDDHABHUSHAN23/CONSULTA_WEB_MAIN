@@ -16,6 +16,37 @@ code {
         monospace;
 }
 
+/* Animations for the logos in the hero section */
+.logo-marquee {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.logo-track {
+  display: flex;
+  width: max-content;
+  animation: scroll 10s linear infinite;
+}
+
+.logo-img {
+  height: 40px;
+  object-fit: contain;
+}
+
+/* Keyframes for scrolling */
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%); /* shift by half since you duplicated */
+  }
+}
+
+
+
+
 @font-face {
   font-family: 'HandelGothic';
   src: url('./assets/fonts/HandelGothic.woff2') format('woff2'),
@@ -82,6 +113,55 @@ code {
         --chart-5: 340 75% 55%;
     }
 }
+
+/* Logo strip animations */
+@keyframes logo-fade-up {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.logo-item { animation: logo-fade-up .8s ease-out both; }
+.logo-strip > *:nth-child(1) { animation-delay: .0s; }
+.logo-strip > *:nth-child(2) { animation-delay: .1s; }
+.logo-strip > *:nth-child(3) { animation-delay: .2s; }
+.logo-strip > *:nth-child(4) { animation-delay: .3s; }
+.logo-strip > *:nth-child(5) { animation-delay: .4s; }
+
+/* Standardize logo display size */
+.logo-frame {
+  width: 176px;   /* ~11rem: tune for your layout */
+  height: 48px;   /* ~3rem */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.logo-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Responsive logo frame sizes */
+.logo-frame { width: 176px; height: 48px; }
+@media (max-width: 1024px) { .logo-frame { width: 160px; height: 44px; } }
+@media (max-width: 640px) { .logo-frame { width: 132px; height: 40px; } }
+
+/* Seamless marquee animation */
+@keyframes logo-marquee-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.logo-marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, #000 8%, #000 92%, rgba(0,0,0,0) 100%);
+  mask-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, #000 8%, #000 92%, rgba(0,0,0,0) 100%);
+}
+.logo-track {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  width: max-content;
+  animation: logo-marquee-left 22s linear infinite;
+}
+.logo-marquee:hover .logo-track { animation-play-state: paused; }
 
 
 

@@ -34,7 +34,7 @@ const Navbar = () => {
           {/* Logo */}
           <Link
             to="/"
-            className="font-handel text-3xl font-bold tracking-wide text-[#2A2F87] uppercase">
+            className="font-handel text-3xl font-semi-bold tracking-wide text-[#2A2F87] uppercase">
             CONSULTA
           </Link>
 

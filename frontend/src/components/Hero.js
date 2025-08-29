@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Play } from "lucide-react";
+import DotTextBanner from "./DotTextBanner";
 
 const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -9,20 +10,57 @@ const Hero = () => {
     setIsVisible(true);
   }, []);
 
+  // Parallax dotted text effect
+  const [scrollY, setScrollY] = useState(0);
+  useEffect(() => {
+    const onScroll = () => setScrollY(window.scrollY || 0);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Centered zoom + subtle drift + gentle fade (Apple-ish)
+  const bannerStyle = useMemo(() => {
+    const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+    const p = Math.min(scrollY / (vh * 0.9), 1); // 0..1 across ~one viewport
+    const scale = 1 + p *1;                 // 1 → ~1.28
+    const translateY = p * 24;                  // subtle drift
+    const opacity = 0.28 - p * 0.18;             // slight fade 0.28 → 0.18
+    return {
+      transform: `translate3d(0, ${translateY}px, 0) scale(${scale})`,
+      opacity,
+      willChange: "transform, opacity",
+    };
+  }, [scrollY]);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-gray-50 to-white">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.1),transparent_50%)] pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(120,119,198,0.08),transparent_50%)] pointer-events-none" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+      {/* Decorative dotted text above background */}
+      <DotTextBanner
+        text="Anthrobotic"
+        className="absolute inset-0 z-[8] pointer-events-none"
+        color="#111111"
+        fontSize={240}
+        opacity={0.1}  // temporarily strong so you can see it
+        vertical={false}
+        style={{
+          ...bannerStyle,       // your scroll-based translate/scale/opacity
+          WebkitMaskImage: "linear-gradient(90deg, transparent 0%, black 10%, black 90%, transparent 100%)",
+          maskImage: "linear-gradient(90deg, transparent 0%, black 10%, black 90%, transparent 100%)",
+        }}
+      />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
         <div className="text-center">
           {/* Main Heading */}
           <div
-            className={`transition-all duration-1000 ease-out ${isVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-8"
-              }`}
+            className={`transition-all duration-1000 ease-out ${
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            }`}
           >
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight tracking-tight">
               Automation
@@ -35,10 +73,9 @@ const Hero = () => {
 
           {/* Subtitle */}
           <div
-            className={`transition-all duration-1000 ease-out delay-300 ${isVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-8"
-              }`}
+            className={`transition-all duration-1000 ease-out delay-300 ${
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            }`}
           >
             <p className="mt-8 text-xl sm:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed font-light">
               We are an experienced & affordable automation company delivering
@@ -48,10 +85,9 @@ const Hero = () => {
 
           {/* CTA Buttons */}
           <div
-            className={`transition-all duration-1000 ease-out delay-500 ${isVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-8"
-              }`}
+            className={`transition-all duration-1000 ease-out delay-500 ${
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            }`}
           >
             <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
               <Link
@@ -73,49 +109,46 @@ const Hero = () => {
 
           {/* Trusted By */}
           <div
-            className={`transition-all duration-1000 ease-out delay-700 ${isVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-8"
-              }`}
+            className={`transition-all duration-1000 ease-out delay-700 ${
+              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            }`}
           >
             <div className="mt-20">
               <p className="text-sm text-gray-500 font-medium tracking-wide uppercase mb-8">
                 Trusted by industry leaders
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 opacity-60">
+              <div className="logo-marquee opacity-80">
                 {/* Placeholder for company logos */}
-                {/* <div className="h-8 w-24 bg-gray-200 rounded animate-pulse" />
-                <div className="h-8 w-28 bg-gray-200 rounded animate-pulse" />
-                <div className="h-8 w-20 bg-gray-200 rounded animate-pulse" />
-                <div className="h-8 w-32 bg-gray-200 rounded animate-pulse" />
-                <div className="h-8 w-24 bg-gray-200 rounded animate-pulse" /> */}
 
-                <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
-                  <img
-                    src="/logos/siemens.svg"
-                    alt="Siemens"
-                    className="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300 object-contain"
-                  />
-                  <img
-                    src="/logos/schneider.svg"
-                    alt="Schneider Electric"
-                    className="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300 object-contain"
-                  />
-                  <img
-                    src="/logos/abb.svg"
-                    alt="ABB"
-                    className="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300 object-contain"
-                  />
-                  <img
-                    src="/logos/honeywell.svg"
-                    alt="Honeywell"
-                    className="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300 object-contain"
-                  />
-                  <img
-                    src="/logos/rockwell.svg"
-                    alt="Rockwell Automation"
-                    className="h-10 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300 object-contain"
-                  />
+                <div className="logo-marquee opacity-80">
+                  <div className="logo-track gap-x-12 py-2">
+                    {[
+                      { src: "/logos/siemens.svg", alt: "Siemens" },
+                      { src: "/logos/dell.svg", alt: "Dell Technologies" },
+                      { src: "/logos/cytiva.svg", alt: "Cytiva" },
+                    ].map((logo, i) => (
+                      <img
+                        key={i}
+                        src={logo.src}
+                        alt={logo.alt}
+                        className="logo-img grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300 hover:scale-105"
+                      />
+                    ))}
+
+                    {/* duplicate set for seamless looping */}
+                    {[
+                      { src: "/logos/siemens.svg", alt: "Siemens" },
+                      { src: "/logos/dell.svg", alt: "Dell Technologies" },
+                      { src: "/logos/cytiva.svg", alt: "Cytiva" },
+                    ].map((logo, i) => (
+                      <img
+                        key={`dup-${i}`}
+                        src={logo.src}
+                        alt={logo.alt}
+                        className="logo-img grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300 hover:scale-105"
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
 
