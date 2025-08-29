@@ -16,6 +16,15 @@ code {
         monospace;
 }
 
+@font-face {
+  font-family: 'HandelGothic';
+  src: url('./assets/fonts/HandelGothic.woff2') format('woff2'),
+       url('./assets/fonts/HandelGothic.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 
 
 @layer base {

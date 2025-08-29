@@ -34,9 +34,8 @@ const Navbar = () => {
           {/* Logo */}
           <Link
             to="/"
-            className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent hover:from-gray-800 hover:to-gray-500 transition-all duration-300"
-          >
-            Consulta
+            className="font-handel text-3xl font-bold tracking-wide text-[#2A2F87] uppercase">
+            CONSULTA
           </Link>
 
           {/* Desktop Navigation */}

@@ -7,6 +7,10 @@ module.exports = {
   ],
   theme: {
   	extend: {
+		// This is for the font family 
+		fontFamily: {
+			handel: ['HandelGothic', 'sans-serif'],
+		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
