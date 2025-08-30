@@ -38,10 +38,11 @@ const Hero = () => {
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(120,119,198,0.1),transparent_50%)] pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(120,119,198,0.08),transparent_50%)] pointer-events-none" />
+  
 
       {/* Decorative dotted text above background */}
       <DotTextBanner
-        text="-INOVATION-"
+        text="INOVATION"
         className="absolute inset-0 z-[8] pointer-events-none"
         color="#111111"
         fontSize={240}
