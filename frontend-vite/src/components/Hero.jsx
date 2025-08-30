@@ -23,7 +23,7 @@ const Hero = () => {
   const bannerStyle = useMemo(() => {
     const vh = typeof window !== "undefined" ? window.innerHeight : 800;
     const p = Math.min(scrollY / (vh * 0.9), 1); // 0..1 across ~one viewport
-    const scale = 1 + p *1;                 // 1 → ~1.28
+    const scale = 1 + p *1.28;                 // 1 → ~1.28
     const translateY = p * 24;                  // subtle drift
     const opacity = 0.28 - p * 0.18;             // slight fade 0.28 → 0.18
     return {
@@ -42,8 +42,8 @@ const Hero = () => {
 
       {/* Decorative dotted text above background */}
       <DotTextBanner
-        text="INOVATION"
-        className="absolute inset-0 z-[8] pointer-events-none"
+        text="-INOVATION-"
+        className="absolute top-10 inset-0 z-[8] pointer-events-none"
         color="#111111"
         fontSize={240}
         opacity={0.1}  // temporarily strong so you can see it

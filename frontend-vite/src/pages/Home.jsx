@@ -11,9 +11,6 @@ import Footer from "../components/Footer";
 const Home = () => {
   return (
     <div className="min-h-screen">
-      {/* debug pill just to prove Tailwind is applying */}
-      
-
       <Hero />
       <AboutSection />
       <StatsSection />

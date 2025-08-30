@@ -261,3 +261,54 @@ export const successStories = [
     year: "2023"
   }
 ];
+
+
+export const sampleAssociates = [
+  {
+    id: "siemens",
+    name: "Siemens",
+    logo: "/logos/siemens.svg",
+    website: "https://www.siemens.com",
+    blurb:
+      "Technology partner for PCS 7, WinCC, and industrial digitalization initiatives.",
+    industries: ["Cement", "Power", "Pharma"],
+    location: "Global",
+    since: 2015,
+    tags: ["DCS", "PLC", "Drives"],
+  },
+  {
+    id: "abb",
+    name: "ABB",
+    logo: "/logos/abb.svg",
+    website: "https://new.abb.com",
+    blurb:
+      "Electrical & automation solutions for heavy industries and utilities.",
+    industries: ["Cement", "Metals", "Chemicals"],
+    location: "Global",
+    since: 2018,
+    tags: ["Electrical", "Drives"],
+  },
+  {
+    id: "matrikon",
+    name: "Matrikon (Honeywell)",
+    logo: "/logos/matrikon.svg",
+    website: "https://www.matrikon.com",
+    blurb: "OPC UA/DA/HDA connectivity stack enabling secure data exchange.",
+    industries: ["Cement", "Oil & Gas", "Power"],
+    location: "Global",
+    since: 2016,
+    tags: ["OPC", "Connectivity"],
+  },
+  {
+    id: "kepware",
+    name: "Kepware (PTC)",
+    logo: "/logos/kepware.svg",
+    website: "https://www.ptc.com/en/products/kepware",
+    blurb:
+      "Industrial connectivity platform for multi-vendor PLCs and historians.",
+    industries: ["Cement", "FMCG", "Automotive"],
+    location: "Global",
+    since: 2017,
+    tags: ["OPC", "Connectivity"],
+  },
+];

@@ -157,29 +157,84 @@ export const stats = [
   }
 ];
 
-export const testimonials = [{}
-  // {
-  //   id: 1,
-  //   name: "Rajesh Kumar",
-  //   position: "Plant Manager",
-  //   company: "Steel Industries Ltd.",
-  //   message: "Consulta's automation solutions have significantly improved our production efficiency and reduced operational costs.",
-  //   image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
-  // },
-  // {
-  //   id: 2, 
-  //   name: "Priya Sharma",
-  //   position: "Operations Director",
-  //   company: "Chemical Works Pvt.",
-  //   message: "Their expertise in chemical process automation is unmatched. Excellent service and support.",
-  //   image: "https://tse3.mm.bing.net/th/id/OIP.Cf3rSUAqoBhMkJ-HTHq2aAHaLH?r=0&pid=Api"
-  // },
-  // {
-  //   id: 3,
-  //   name: "Michael Rodriguez", 
-  //   position: "Chief Engineer",
-  //   company: "Power Solutions Inc.",
-  //   message: "Professional team with deep technical knowledge. They delivered our project on time and within budget.",
-  //   image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face"
-  // }
+export const testimonials = [
+  {
+    id: 1,
+    name: "Rajesh Kumar",
+    position: "Plant Manager",
+    company: "Steel Industries Ltd.",
+    message: "Consulta's automation solutions have significantly improved our production efficiency and reduced operational costs.",
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
+  },
+  {
+    id: 2, 
+    name: "Priya Sharma",
+    position: "Operations Director",
+    company: "Chemical Works Pvt.",
+    message: "Their expertise in chemical process automation is unmatched. Excellent service and support.",
+    image: "https://tse3.mm.bing.net/th/id/OIP.Cf3rSUAqoBhMkJ-HTHq2aAHaLH?r=0&pid=Api"
+  },
+  {
+    id: 3,
+    name: "Michael Rodriguez", 
+    position: "Chief Engineer",
+    company: "Power Solutions Inc.",
+    message: "Professional team with deep technical knowledge. They delivered our project on time and within budget.",
+    image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face"
+  }
 ];
+export const sampleAssociates = [
+  {
+    id: "siemens",
+    name: "Siemens",
+    logo: "/logos/siemens.svg",
+    website: "https://www.siemens.com",
+    blurb:
+      "Technology partner for PCS 7, WinCC, and industrial digitalization initiatives.",
+    industries: ["Cement", "Power", "Pharma"],
+    location: "Global",
+    since: 2015,
+    tags: ["DCS", "PLC", "Drives"],
+  },
+  {
+    id: "abb",
+    name: "ABB",
+    logo: "/logos/abb.svg",
+    website: "https://new.abb.com",
+    blurb:
+      "Electrical & automation solutions for heavy industries and utilities.",
+    industries: ["Cement", "Metals", "Chemicals"],
+    location: "Global",
+    since: 2018,
+    tags: ["Electrical", "Drives"],
+  },
+  {
+    id: "matrikon",
+    name: "Matrikon (Honeywell)",
+    logo: "/logos/matrikon.svg",
+    website: "https://www.matrikon.com",
+    blurb: "OPC UA/DA/HDA connectivity stack enabling secure data exchange.",
+    industries: ["Cement", "Oil & Gas", "Power"],
+    location: "Global",
+    since: 2016,
+    tags: ["OPC", "Connectivity"],
+  },
+  {
+    id: "kepware",
+    name: "Kepware (PTC)",
+    logo: "/logos/kepware.svg",
+    website: "https://www.ptc.com/en/products/kepware",
+    blurb:
+      "Industrial connectivity platform for multi-vendor PLCs and historians.",
+    industries: ["Cement", "FMCG", "Automotive"],
+    location: "Global",
+    since: 2017,
+    tags: ["OPC", "Connectivity"],
+  },
+];
+
+
+
+// keep your other exports too
+// export const sampleAssociates = [ /* … */ ];
+// // etc.
