@@ -210,6 +210,47 @@ code {
 html { scroll-behavior: smooth; }
 
 
+/* ---- Hero marquee utilities ---- */
+@layer utilities {
+  @keyframes logo-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); } /* because we render a duplicated track */
+  }
+}
+
+/* ---- Hero marquee components ---- */
+@layer components {
+  .logo-marquee {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;          /* optional */
+  }
+
+  /* nice edge fade */
+  .logo-marquee::before,
+  .logo-marquee::after {
+    content: "";
+    position: absolute; top: 0; bottom: 0;
+    width: 80px; pointer-events: none;
+  }
+  .logo-marquee::before { left: 0;  background: linear-gradient(to right, #fff, transparent); }
+  .logo-marquee::after  { right: 0; background: linear-gradient(to left,  #fff, transparent); }
+
+  .logo-track {
+    display: flex; align-items: center; gap: 3rem;
+    width: max-content;            /* let content define width */
+    padding-block: 0.5rem;
+    animation: logo-marquee 32s linear infinite;
+    will-change: transform;
+  }
+  /* pause on hover or reduced motion */
+  .logo-marquee:is(:hover, :focus-within) .logo-track { animation-play-state: paused; }
+  @media (prefers-reduced-motion: reduce) {
+    .logo-track { animation: none; transform: none; }
+  }
+
+  .logo-img { height: 22px; width: auto; object-fit: contain; }
+}
 
 
 

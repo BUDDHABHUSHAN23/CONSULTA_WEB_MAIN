@@ -814,7 +814,7 @@ MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
 DB_NAME = os.getenv("DB_NAME", "consulta")
 
 # FE origins: comma-separated in .env, or sensible dev defaults
-DEFAULT_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173"
+DEFAULT_ORIGINS = "http://localhost:5173, http://127.0.0.1:5173"
 ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", DEFAULT_ORIGINS).split(",") if o.strip()]
 
 # -----------------------------------------------------------------------------

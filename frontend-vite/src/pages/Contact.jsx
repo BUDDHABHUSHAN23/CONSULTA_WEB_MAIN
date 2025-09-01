@@ -8,6 +8,7 @@ import { Textarea } from "../components/ui/textarea";
 import { useToast } from "../hooks/use-toast";
 import { companyInfo } from "../data/mock";
 import GoogleMapComponent from "../components/GoogleMapComponent";
+import PeekBanner from "../components/PeekBanner";
 
 const Contact = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -111,7 +112,7 @@ const Contact = () => {
 
       {/* Contact Content */}
       <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 sticky top-0">
           <div className="grid lg:grid-cols-3 gap-16">
             {/* Contact Information */}
             <div
@@ -119,7 +120,7 @@ const Contact = () => {
                 isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"
               }`}
             >
-              <div className="sticky top-8">
+              <div className=" top-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-8">
                   Corporate Office
                 </h2>
@@ -258,9 +259,9 @@ const Contact = () => {
                       Industry *
                     </label>
                     <Input
-                      id="email"
-                      name="email"
-                      type="email"
+                      id="industry"
+                      name="industry"
+                      type="industry"
                       required
                       value={formData.industry}
                       onChange={handleInputChange}
@@ -275,11 +276,12 @@ const Contact = () => {
                       Company *
                     </label>
                     <Input
-                      id="email"
-                      name="email"
-                      type="email"
+                    // here is the mistake 
+                      id="company"
+                      name="company"  
+                      type="company"
                       required
-                      value={formData.industry}
+                      value={formData.company}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all duration-300"
                       placeholder="e.g., Google, Infosys, Reliance"
@@ -372,8 +374,13 @@ const Contact = () => {
             </div>
           </div>
         </div>
-      </section>
 
+
+      </section>
+      {/* Peek banner between content and footer */}
+        <div className="mt-[-60px]"> {/* optional: pull it up a bit more */}
+        <PeekBanner text="Anthrobotic" bandHeight={210} reveal={120} />
+        </div>
       <Footer />
     </div>
   );
