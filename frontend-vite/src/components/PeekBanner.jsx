@@ -24,7 +24,7 @@ export default function PeekBanner({
             x="50%"
             y="50%"
             fill="transparent"
-            stroke="#111111"
+            stroke="#2D3983"
             strokeWidth="0.01"
             fontFamily="handelGothic"
             fontWeight="900"

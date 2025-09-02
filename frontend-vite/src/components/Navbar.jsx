@@ -35,9 +35,10 @@ const Navbar = () => {
           {/* Logo */}
           <Link
             to="/"
-            className="font-handelGothic text-3xl font-semi-bold tracking-wide text-[#2A2F87] uppercase">
+            style={{ fontFamily: 'ConsultaHandel' }}
+            className="logo-wordmark font-consulta font-semibold uppercase leading-none tracking-[0.06em] text-[#2F358B] text-[30px] sm:text-[34px]">
             CONSULTA
-          </Link>
+          </Link> 
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">

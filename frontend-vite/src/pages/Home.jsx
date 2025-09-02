@@ -8,6 +8,7 @@ import TechnologiesSection from "../components/TechnologiesSection";
 import TestimonialsSection from "../components/TestimonialsSection";
 import Footer from "../components/Footer";
 
+
 const Home = () => {
   return (
     <div className="min-h-screen">
@@ -16,7 +17,7 @@ const Home = () => {
       <StatsSection />
       <ServicesSection />
       <IndustriesSection />
-      <TechnologiesSection />
+      {/* <TechnologiesSection /> */}
       <TestimonialsSection />
       <Footer />
     </div>

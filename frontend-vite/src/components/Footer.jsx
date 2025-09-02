@@ -14,8 +14,9 @@ const Footer = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Company Info */}
             <div className="lg:col-span-2">
-              <Link to="/" className="text-2xl font-bold mb-4 block">
-                Consulta
+               
+              <Link to="/" className=" text-2xl font-bold mb-4 block">
+                  CONSULTA 
               </Link>
               <p className="text-gray-300 mb-6 leading-relaxed max-w-md">
                 Leading provider of industrial automation solutions with expertise 

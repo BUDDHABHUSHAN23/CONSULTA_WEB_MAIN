@@ -118,12 +118,12 @@ const Associates = () => {
                   isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
                 }`}
               >
-                <div className="mt-20">
-                  <p className="text-sm text-gray-500 font-medium tracking-wide uppercase mb-8">
-                    Trusted by industry leaders
+                <div className="mt-10">
+                  <p className="text-sm text-gray-500 font-medium tracking-wide uppercase mb-8 justify-content: center ">
+                    Trusted by industry Assosicates
                   </p>
 
-                  <div className="logo-marquee opacity-80 border border-gray-200 bg-white/60">
+                  <div className="logo-marquee opacity-80  bg-white/60">
                     <div className="logo-track">
                       {[
                         { src: "/logos/siemens.svg", alt: "Siemens" },

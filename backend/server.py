@@ -814,8 +814,15 @@ MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
 DB_NAME = os.getenv("DB_NAME", "consulta")
 
 # FE origins: comma-separated in .env, or sensible dev defaults
-DEFAULT_ORIGINS = "http://localhost:5173, http://127.0.0.1:5173"
-ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", DEFAULT_ORIGINS).split(",") if o.strip()]
+DEFAULT_ORIGINS =["http://localhost:5173, http://127.0.0.1:5173", "http://localhost:4173", "https://localhost:5173",]
+# Parse env if provided; else use defaults
+_raw = os.getenv("CORS_ORIGINS")  # e.g. "http://localhost:5173,http://127.0.0.1:5173"
+if _raw:
+    ORIGINS = [o.strip() for o in _raw.split(",") if o.strip()]
+else:
+    ORIGINS = DEFAULT_ORIGINS
+
+logger.info("CORS allow_origins = %s", ORIGINS)
 
 # -----------------------------------------------------------------------------
 # DB
@@ -838,12 +845,12 @@ api_router = APIRouter(prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ORIGINS,         # IMPORTANT: no "*" when allow_credentials=True
+    allow_origins=ORIGINS,        # must be exact; no "*" with credentials
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    # expose_headers=["*"],       # optional: if frontend needs to read custom headers
 )
-
 # -----------------------------------------------------------------------------
 # Models
 # -----------------------------------------------------------------------------
