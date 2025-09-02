@@ -797,7 +797,8 @@ from pathlib import Path
 from enum import Enum
 from datetime import datetime
 import os, uuid, logging
-
+import json 
+import asyncio
 # -----------------------------------------------------------------------------
 # Env & logging
 # -----------------------------------------------------------------------------
@@ -813,16 +814,27 @@ logger = logging.getLogger("consulta.api")
 MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
 DB_NAME = os.getenv("DB_NAME", "consulta")
 
-# FE origins: comma-separated in .env, or sensible dev defaults
-DEFAULT_ORIGINS =["http://localhost:5173, http://127.0.0.1:5173", "http://localhost:4173", "https://localhost:5173",]
-# Parse env if provided; else use defaults
-_raw = os.getenv("CORS_ORIGINS")  # e.g. "http://localhost:5173,http://127.0.0.1:5173"
-if _raw:
-    ORIGINS = [o.strip() for o in _raw.split(",") if o.strip()]
-else:
-    ORIGINS = DEFAULT_ORIGINS
+def parse_origins(env_value: str | None, defaults: list[str]) -> list[str]:
+    if not env_value:
+        return defaults
+    s = env_value.strip()
+    # Allow JSON list OR comma-separated string
+    if s.startswith("["):
+        try:
+            vals = json.loads(s)
+            return [v.strip() for v in vals if isinstance(v, str) and v.strip()]
+        except json.JSONDecodeError:
+            pass
+    return [p.strip() for p in s.split(",") if p.strip()]
 
-logger.info("CORS allow_origins = %s", ORIGINS)
+# FE origins: comma-separated in .env, or sensible dev defaults
+DEFAULT_ORIGINS = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:4173",  # if you test https locally
+]
+# Parse env if provided; else use defaults
+ORIGINS = parse_origins(os.getenv("CORS_ORIGINS"), DEFAULT_ORIGINS)
 
 # -----------------------------------------------------------------------------
 # DB
@@ -845,12 +857,15 @@ api_router = APIRouter(prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ORIGINS,        # must be exact; no "*" with credentials
-    allow_credentials=True,
+    allow_origins=ORIGINS,
+    allow_credentials=True,   # keep only if you actually use cookies
     allow_methods=["*"],
     allow_headers=["*"],
-    # expose_headers=["*"],       # optional: if frontend needs to read custom headers
+    max_age=600,
+    # optional safety net in dev:
+    # allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?$",
 )
+logger.info("CORS allow_origins=%s", ORIGINS)
 # -----------------------------------------------------------------------------
 # Models
 # -----------------------------------------------------------------------------
@@ -1204,19 +1219,32 @@ async def initialize_success_stories_data():
     await db.success_stories.insert_many(data)
     logger.info(f"Initialized {len(data)} success stories")
 
+
+# Imporved startup
+
 @app.on_event("startup")
 async def on_startup():
-    # indexes help avoid duplicates and speed things up
-    await db.industries.create_index("slug", unique=True)
-    await db.industries.create_index([("order", 1)])
-    await db.testimonials.create_index([("order", 1)])
-    await db.success_stories.create_index([("year", -1)])
-    # warm ping
     try:
         await db.command("ping")
         logger.info("MongoDB connected")
-    except Exception as e:
-        logger.error(f"Mongo ping failed: {e}")
+
+        tasks = [
+            db.industries.create_index("slug", unique=True),
+            db.industries.create_index([("order", 1)]),
+            db.testimonials.create_index([("order", 1)]),
+            db.success_stories.create_index([("year", -1)]),
+        ]
+        # Don’t fail the whole startup if one index already exists, etc.
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        for r in results:
+            if isinstance(r, Exception):
+                logger.info("Index creation note: %s", r)
+    except asyncio.CancelledError:
+        # reload interrupted startup—normal in dev
+        logger.info("Startup cancelled by reload; will retry.")
+        raise
+
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

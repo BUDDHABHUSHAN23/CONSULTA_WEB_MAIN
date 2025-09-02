@@ -119,10 +119,6 @@ const Associates = () => {
                 }`}
               >
                 <div className="mt-10">
-                  <p className="text-sm text-gray-500 font-medium tracking-wide uppercase mb-8 justify-content: center ">
-                    Trusted by industry Assosicates
-                  </p>
-
                   <div className="logo-marquee opacity-80  bg-white/60">
                     <div className="logo-track">
                       {[
