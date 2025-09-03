@@ -131,7 +131,15 @@ export const companyInfo = {
     phone: "+91 22 27560593",
     email: "info@consulta.in",
     hours: "Mon to Sat :: 10.00 AM - 06.00 PM"
-  }
+  },
+  social: {
+    youtube: "https://www.youtube.com/@YourChannel",
+    instagram: "https://www.instagram.com/yourhandle",
+    linkedin: "https://www.linkedin.com/company/your-company",
+    facebook: "https://www.facebook.com/yourpage",
+    twitter: "https://twitter.com/yourhandle",
+    github: "https://github.com/yourorg",
+  },
 };
 
 export const stats = [
