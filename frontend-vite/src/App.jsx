@@ -45,7 +45,7 @@ import Industries from "./pages/Industries";
 import Associates from "./pages/Associates";
 import ChatBot from "./components/ChatBot";
 import { Toaster } from "./components/ui/toaster";
-
+import About from "./pages/About";
 // 404 → redirect
 const NotFound = () => <Navigate to="/industries" replace />;
 
@@ -58,6 +58,7 @@ export default function App() {
         <Route path="/industries" element={<Industries />} />
         <Route path="/associates" element={<Associates />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/about" element={<About />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <ChatBot />

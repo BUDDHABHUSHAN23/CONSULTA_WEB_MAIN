@@ -1,22 +1,7 @@
 // Mock data for the Consulta Technologies website
-
 export const industries = [
   {
     id: 1,
-    title: "Power",
-    description: "The power industry is the generation, transmission, distribution and sale of electric power to general public.",
-    icon: "⚡",
-    slug: "power",
-    image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=400&h=300&fit=crop",
-    features: [
-      "Smart Grid Solutions",
-      "Renewable Energy Integration", 
-      "Power Distribution Automation",
-      "Energy Management Systems"
-    ]
-  },
-  {
-    id: 2,
     title: "Cement",
     description: "Cement is a binder, a substance used in construction that sets and hardens and can bind other materials together.",
     icon: "🏗️",
@@ -27,6 +12,20 @@ export const industries = [
       "Quality Control Systems",
       "Kiln Process Optimization", 
       "Raw Material Handling"
+    ]
+  },
+  {
+    id: 2,
+    title: "Steel",
+    description: "It is a business of processing iron ore into steel, which in its simplest form is an iron-carbon alloy and turning that metal into partially finished products.",
+    icon: "🏭",
+    slug: "steel",
+    image: "https://tse2.mm.bing.net/th/id/OIP.-nI2jL474hmnI1HnP1nWFgHaE8?pid=Api",
+    features: [
+      "Blast Furnace Control",
+      "Rolling Mill Automation", 
+      "Quality Testing Systems",
+      "Scrap Processing"
     ]
   },
   {
@@ -45,16 +44,16 @@ export const industries = [
   },
   {
     id: 4,
-    title: "Steel",
-    description: "It is a business of processing iron ore into steel, which in its simplest form is an iron-carbon alloy and turning that metal into partially finished products.",
-    icon: "🏭",
-    slug: "steel",
-    image: "https://tse2.mm.bing.net/th/id/OIP.-nI2jL474hmnI1HnP1nWFgHaE8?pid=Api",
+    title: "Power",
+    description: "The power industry is the generation, transmission, distribution and sale of electric power to general public.",
+    icon: "⚡",
+    slug: "power",
+    image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=400&h=300&fit=crop",
     features: [
-      "Blast Furnace Control",
-      "Rolling Mill Automation", 
-      "Quality Testing Systems",
-      "Scrap Processing"
+      "Smart Grid Solutions",
+      "Renewable Energy Integration", 
+      "Power Distribution Automation",
+      "Energy Management Systems"
     ]
   },
   {
@@ -73,7 +72,7 @@ export const industries = [
   },
   {
     id: 6, 
-    title: "Chemical / Pharmaceutical",
+    title: "Pharma",
     description: "These industries are basic industries and it is vital to the economy of the nation. It also provides household chemical and medicine for the national pharmaceutical service.",
     icon: "🧪",
     slug: "chemical-pharmaceutical",
@@ -130,7 +129,7 @@ export const companyInfo = {
   contact: {
     phone: "+91 22 27560593",
     email: "info@consulta.in",
-    hours: "Mon to Sat :: 10.00 AM - 06.00 PM"
+    hours: "Mon to Sat : 10.00 AM - 06.00 PM"
   },
   social: {
     youtube: "https://www.youtube.com/@YourChannel",
