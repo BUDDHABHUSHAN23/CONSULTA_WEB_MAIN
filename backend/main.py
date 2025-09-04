@@ -25,4 +25,3 @@ def make_app() -> FastAPI:
 app = make_app()
 
 
-image.png

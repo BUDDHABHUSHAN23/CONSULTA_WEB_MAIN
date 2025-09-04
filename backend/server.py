@@ -785,497 +785,504 @@
 
 # @app.on_event("shutdown")
 # async def shutdown_db_client():
+
+
+# ////////////////////////////////////////////////////////////////////////////////
+# /////////////////////////////////////////////////////////////////////////////////
+
+#  final changes
+
 #     client.close()
-from fastapi import FastAPI, APIRouter, HTTPException, status
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
-from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional, Dict, Any
-from pathlib import Path
-from enum import Enum
-from datetime import datetime
-import os, uuid, logging
-import json 
-import asyncio
-# -----------------------------------------------------------------------------
-# Env & logging
-# -----------------------------------------------------------------------------
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / ".env")
+# from fastapi import FastAPI, APIRouter, HTTPException, status
+# from fastapi.responses import JSONResponse
+# from fastapi.middleware.cors import CORSMiddleware
+# from dotenv import load_dotenv
+# from motor.motor_asyncio import AsyncIOMotorClient
+# from pydantic import BaseModel, Field, EmailStr
+# from typing import List, Optional, Dict, Any
+# from pathlib import Path
+# from enum import Enum
+# from datetime import datetime
+# import os, uuid, logging
+# import json 
+# import asyncio
+# # -----------------------------------------------------------------------------
+# # Env & logging
+# # -----------------------------------------------------------------------------
+# ROOT_DIR = Path(__file__).parent
+# load_dotenv(ROOT_DIR / ".env")
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger("consulta.api")
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+# )
+# logger = logging.getLogger("consulta.api")
 
-MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
-DB_NAME = os.getenv("DB_NAME", "consulta")
+# MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
+# DB_NAME = os.getenv("DB_NAME", "consulta")
 
-def parse_origins(env_value: str | None, defaults: list[str]) -> list[str]:
-    if not env_value:
-        return defaults
-    s = env_value.strip()
-    # Allow JSON list OR comma-separated string
-    if s.startswith("["):
-        try:
-            vals = json.loads(s)
-            return [v.strip() for v in vals if isinstance(v, str) and v.strip()]
-        except json.JSONDecodeError:
-            pass
-    return [p.strip() for p in s.split(",") if p.strip()]
+# def parse_origins(env_value: str | None, defaults: list[str]) -> list[str]:
+#     if not env_value:
+#         return defaults
+#     s = env_value.strip()
+#     # Allow JSON list OR comma-separated string
+#     if s.startswith("["):
+#         try:
+#             vals = json.loads(s)
+#             return [v.strip() for v in vals if isinstance(v, str) and v.strip()]
+#         except json.JSONDecodeError:
+#             pass
+#     return [p.strip() for p in s.split(",") if p.strip()]
 
-# FE origins: comma-separated in .env, or sensible dev defaults
-DEFAULT_ORIGINS = [
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  "http://localhost:4173",  # if you test https locally
-]
-# Parse env if provided; else use defaults
-ORIGINS = parse_origins(os.getenv("CORS_ORIGINS"), DEFAULT_ORIGINS)
+# # FE origins: comma-separated in .env, or sensible dev defaults
+# DEFAULT_ORIGINS = [
+#   "http://localhost:5173",
+#   "http://127.0.0.1:5173",
+#   "http://localhost:4173",  # if you test https locally
+# ]
+# # Parse env if provided; else use defaults
+# ORIGINS = parse_origins(os.getenv("CORS_ORIGINS"), DEFAULT_ORIGINS)
 
-# -----------------------------------------------------------------------------
-# DB
-# -----------------------------------------------------------------------------
-client = AsyncIOMotorClient(MONGO_URL)
-db = client[DB_NAME]
+# # -----------------------------------------------------------------------------
+# # DB
+# # -----------------------------------------------------------------------------
+# client = AsyncIOMotorClient(MONGO_URL)
+# db = client[DB_NAME]
 
-# -----------------------------------------------------------------------------
-# App / Router
-# -----------------------------------------------------------------------------
-# Put docs under /api/* so FE and BE paths are consistent
-app = FastAPI(
-    title="Consulta Technologies API",
-    version="1.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json",
-)
-api_router = APIRouter(prefix="/api")
+# # -----------------------------------------------------------------------------
+# # App / Router
+# # -----------------------------------------------------------------------------
+# # Put docs under /api/* so FE and BE paths are consistent
+# app = FastAPI(
+#     title="Consulta Technologies API",
+#     version="1.0.0",
+#     docs_url="/api/docs",
+#     redoc_url="/api/redoc",
+#     openapi_url="/api/openapi.json",
+# )
+# api_router = APIRouter(prefix="/api")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=ORIGINS,
-    allow_credentials=True,   # keep only if you actually use cookies
-    allow_methods=["*"],
-    allow_headers=["*"],
-    max_age=600,
-    # optional safety net in dev:
-    # allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?$",
-)
-logger.info("CORS allow_origins=%s", ORIGINS)
-# -----------------------------------------------------------------------------
-# Models
-# -----------------------------------------------------------------------------
-class ContactStatus(str, Enum):
-    NEW = "new"
-    CONTACTED = "contacted"
-    QUALIFIED = "qualified"
-    CLOSED = "closed"
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=ORIGINS,
+#     allow_credentials=True,   # keep only if you actually use cookies
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+#     max_age=600,
+#     # optional safety net in dev:
+#     # allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?$",
+# )
+# logger.info("CORS allow_origins=%s", ORIGINS)
+# # -----------------------------------------------------------------------------
+# # Models
+# # -----------------------------------------------------------------------------
+# class ContactStatus(str, Enum):
+#     NEW = "new"
+#     CONTACTED = "contacted"
+#     QUALIFIED = "qualified"
+#     CLOSED = "closed"
 
-class MessageSender(str, Enum):
-    USER = "user"
-    BOT = "bot"
+# class MessageSender(str, Enum):
+#     USER = "user"
+#     BOT = "bot"
 
-class ContactCreate(BaseModel):
-    name: str = Field(..., min_length=2, max_length=100)
-    email: EmailStr
-    phone: str = Field(..., min_length=10, max_length=20)
-    message: str = Field(..., min_length=10, max_length=1000)
-    industry: Optional[str] = None
-    company: Optional[str] = None
+# class ContactCreate(BaseModel):
+#     name: str = Field(..., min_length=2, max_length=100)
+#     email: EmailStr
+#     phone: str = Field(..., min_length=10, max_length=20)
+#     message: str = Field(..., min_length=10, max_length=1000)
+#     industry: Optional[str] = None
+#     company: Optional[str] = None
 
-class Contact(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str
-    email: str
-    phone: str
-    message: str
-    industry: Optional[str] = None
-    company: Optional[str] = None
-    status: ContactStatus = ContactStatus.NEW
-    source: str = "website"
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-    notes: List[Dict[str, Any]] = []
+# class Contact(BaseModel):
+#     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+#     name: str
+#     email: str
+#     phone: str
+#     message: str
+#     industry: Optional[str] = None
+#     company: Optional[str] = None
+#     status: ContactStatus = ContactStatus.NEW
+#     source: str = "website"
+#     created_at: datetime = Field(default_factory=datetime.utcnow)
+#     updated_at: datetime = Field(default_factory=datetime.utcnow)
+#     notes: List[Dict[str, Any]] = []
 
-class Industry(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    title: str
-    slug: str
-    description: str
-    icon: str
-    image: str
-    features: List[str]
-    market_size: Optional[str] = None
-    growth: Optional[str] = None
-    challenges: List[str] = []
-    solutions: List[str] = []
-    is_active: bool = True
-    order: int = 0
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+# class Industry(BaseModel):
+#     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+#     title: str
+#     slug: str
+#     description: str
+#     icon: str
+#     image: str
+#     features: List[str]
+#     market_size: Optional[str] = None
+#     growth: Optional[str] = None
+#     challenges: List[str] = []
+#     solutions: List[str] = []
+#     is_active: bool = True
+#     order: int = 0
+#     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-class Testimonial(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str
-    position: str
-    company: str
-    message: str
-    image: Optional[str] = None
-    rating: int = Field(5, ge=1, le=5)
-    industry: Optional[str] = None
-    is_active: bool = True
-    order: int = 0
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+# class Testimonial(BaseModel):
+#     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+#     name: str
+#     position: str
+#     company: str
+#     message: str
+#     image: Optional[str] = None
+#     rating: int = Field(5, ge=1, le=5)
+#     industry: Optional[str] = None
+#     is_active: bool = True
+#     order: int = 0
+#     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-class SuccessStory(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    title: str
-    client: str
-    industry: str
-    challenge: str
-    solution: str
-    results: List[str]
-    timeline: str
-    year: int
-    image: Optional[str] = None
-    is_active: bool = True
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+# class SuccessStory(BaseModel):
+#     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+#     title: str
+#     client: str
+#     industry: str
+#     challenge: str
+#     solution: str
+#     results: List[str]
+#     timeline: str
+#     year: int
+#     image: Optional[str] = None
+#     is_active: bool = True
+#     created_at: datetime = Field(default_factory=datetime.utcnow)
 
-class ChatMessage(BaseModel):
-    text: str
-    sender: MessageSender
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+# class ChatMessage(BaseModel):
+#     text: str
+#     sender: MessageSender
+#     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
-class ChatbotRequest(BaseModel):
-    message: str = Field(..., min_length=1, max_length=500)
-    session_id: Optional[str] = None
+# class ChatbotRequest(BaseModel):
+#     message: str = Field(..., min_length=1, max_length=500)
+#     session_id: Optional[str] = None
 
-class ChatbotResponse(BaseModel):
-    message: str
-    session_id: str
+# class ChatbotResponse(BaseModel):
+#     message: str
+#     session_id: str
 
-class CompanyInfo(BaseModel):
-    name: str = "Consulta Technologies Pvt. Ltd."
-    tagline: str = "We are an Experienced & Affordable Automation Company!"
-    description: Optional[str] = None
-    vision: Optional[str] = None
-    mission: Optional[str] = None
-    address: Dict[str, Any] = {}
-    contact: Dict[str, str] = {}
-    stats: Dict[str, Any] = {}
-    certifications: List[str | Dict[str, Any]] = []
-    technologies: List[Dict[str, Any]] = []
-    values: List[Dict[str, str]] = []
-    capabilities: List[Dict[str, Any]] = []
-
-
-class Certification(BaseModel):
-    id: str
-    title: str
-    subtitle: Optional[str] = None
-    body: Optional[str] = None
-    certificateNo: Optional[str] = None
-    validTill: Optional[str] = None
-    badge: Optional[str] = None
-    note: Optional[str] = None
-
-class SolutionPartner(BaseModel):
-    name: str
-    scope: List[str] = []
-    tier: Optional[str] = None
-    since: Optional[int] = None
-    certificateId: Optional[str] = None
-    link: Optional[str] = None
-    logo: Optional[str] = None
-    highlights: List[str] = []
-
-class CompanyInfo(BaseModel):
-    # Allow legacy string list or structured Certification objects
-    certifications: List[Certification | str] = []
-    solution_partner: Optional[SolutionPartner] = None
+# class CompanyInfo(BaseModel):
+#     name: str = "Consulta Technologies Pvt. Ltd."
+#     tagline: str = "We are an Experienced & Affordable Automation Company!"
+#     description: Optional[str] = None
+#     vision: Optional[str] = None
+#     mission: Optional[str] = None
+#     address: Dict[str, Any] = {}
+#     contact: Dict[str, str] = {}
+#     stats: Dict[str, Any] = {}
+#     certifications: List[str | Dict[str, Any]] = []
+#     technologies: List[Dict[str, Any]] = []
+#     values: List[Dict[str, str]] = []
+#     capabilities: List[Dict[str, Any]] = []
 
 
-class StatusCheck(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+# class Certification(BaseModel):
+#     id: str
+#     title: str
+#     subtitle: Optional[str] = None
+#     body: Optional[str] = None
+#     certificateNo: Optional[str] = None
+#     validTill: Optional[str] = None
+#     badge: Optional[str] = None
+#     note: Optional[str] = None
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+# class SolutionPartner(BaseModel):
+#     name: str
+#     scope: List[str] = []
+#     tier: Optional[str] = None
+#     since: Optional[int] = None
+#     certificateId: Optional[str] = None
+#     link: Optional[str] = None
+#     logo: Optional[str] = None
+#     highlights: List[str] = []
 
-# -----------------------------------------------------------------------------
-# Chatbot service (unchanged)
-# -----------------------------------------------------------------------------
-class ChatbotService:
-    # … keep your existing implementation …
-    def __init__(self):
-        self.responses = {
-            "greeting": [
-                "Hello! Welcome to Consulta Technologies. How can I assist you with automation solutions today?",
-                "Hi there! I'm here to help you with any questions about our industrial automation services.",
-                "Greetings! How may I help you transform your operations with our automation expertise?",
-            ],
-            "services": [
-                "We provide comprehensive automation solutions across 8 major industries: Power, Cement, Material Handling, Steel, Water, Chemical/Pharmaceutical, Food & Beverages, and Oil & Gas. Which industry interests you?",
-                "Our services include SCADA systems, PLC programming, DCS implementation, process optimization, and IoT integration. What specific solution are you looking for?",
-            ],
-            "contact": [
-                "You can reach us at +91 22 27560593 or email info@consulta.in. Our office is in Navi Mumbai. Would you like to schedule a consultation?",
-                "We're located at International Technology Park, Belapur, Navi Mumbai. Call us at +91 22 27560593 for immediate assistance.",
-            ],
-            "experience": [
-                "Consulta Technologies has 15+ years of experience with 500+ successful projects across various industries and a team of 50+ expert engineers.",
-                "Since 2008, we've been delivering automation solutions with a 99% client satisfaction rate and expertise across multiple industrial sectors.",
-            ],
-        }
-        self.industry_responses = {
-            "power": "Our Power industry solutions include Smart Grid Systems, Renewable Energy Integration, Power Distribution Automation, and Energy Management Systems with advanced SCADA platforms.",
-            "cement": "For Cement industry, we provide Kiln Optimization, Raw Material Blending Automation, Production Line Control, and Quality Management Systems.",
-            "steel": "Steel industry automation includes Blast Furnace Control, Rolling Mill Automation, Quality Testing Systems, and Safety Interlock Systems.",
-            "water": "Water sector solutions cover Treatment Plant Automation, Distribution Network Management, Quality Monitoring, and SCADA-based Control Systems.",
-            "chemical": "Chemical & Pharmaceutical automation includes Process Control Systems, Batch Manufacturing, Compliance Monitoring, and Safety Systems.",
-            "food": "Food & Beverage solutions feature Production Line Control, Packaging Automation, Quality Assurance, and Cold Chain Management.",
-            "oil": "Oil & Gas automation covers Pipeline Monitoring, Refinery Control Systems, Safety Instrumented Systems, and Distribution Automation.",
-            "material": "Material Handling includes Conveyor Control Systems, Warehouse Automation, Robotic Integration, and Inventory Management.",
-        }
-
-    def generate_response(self, message: str) -> str:
-        msg = message.lower()
-        if any(w in msg for w in ["hello", "hi", "hey", "greetings"]):
-            return self._pick("greeting")
-        if any(w in msg for w in ["service", "solution", "what do you", "automation"]):
-            return self._pick("services")
-        if any(w in msg for w in ["contact", "phone", "email", "address", "location"]):
-            return self._pick("contact")
-        if any(w in msg for w in ["experience", "years", "projects", "clients"]):
-            return self._pick("experience")
-        for k, v in self.industry_responses.items():
-            if k in msg:
-                return v
-        if any(w in msg for w in ["scada", "plc", "dcs", "hmi", "technology"]):
-            return "We work with leading automation technologies including Rockwell Automation, Siemens, Schneider Electric, and Honeywell platforms. Our expertise covers SCADA, PLC programming, DCS systems, and HMI development."
-        if any(w in msg for w in ["price", "cost", "quote", "pricing"]):
-            return "Our automation solutions are competitively priced based on project scope and requirements. For a detailed quote, please share your specific needs or contact our team at +91 22 27560593."
-        return self._pick_default()
-
-    def _pick(self, cat: str) -> str:
-        import random
-        return random.choice(self.responses[cat])
-
-    def _pick_default(self) -> str:
-        import random
-        return random.choice([
-            "Thank you for your inquiry! Could you please provide more details about your automation requirements?",
-            "I'd be happy to help with that. For detailed technical discussions, I recommend connecting with our expert team at +91 22 27560593.",
-            "That's a great question about automation! Could you specify which industry or application you're interested in?",
-            "For comprehensive assistance with your automation needs, please contact our technical team who can provide detailed solutions.",
-        ])
-
-chatbot_service = ChatbotService()
-
-# -----------------------------------------------------------------------------
-# Root / health (FE testConnection hits "/")
-# -----------------------------------------------------------------------------
-@app.get("/")
-async def root():
-    return {"message": "Consulta Technologies API", "version": "1.0.0", "status": "active"}
-
-@app.get("/healthz")
-async def healthz():
-    try:
-        await db.command("ping")
-        return {"ok": True}
-    except Exception as e:
-        return JSONResponse(status_code=503, content={"ok": False, "error": str(e)})
-
-# -----------------------------------------------------------------------------
-# API Routes
-# -----------------------------------------------------------------------------
-@api_router.post("/contacts", response_model=Contact)
-async def create_contact(contact_data: ContactCreate):
-    try:
-        contact = Contact(**contact_data.model_dump())
-        contact_dict = contact.model_dump()
-        res = await db.contacts.insert_one(contact_dict)
-        if not res.inserted_id:
-            raise HTTPException(status_code=500, detail="Failed to create contact")
-        logger.info(f"New contact: {contact.name} <{contact.email}>")
-        return contact
-    except Exception as e:
-        logger.error(f"create_contact: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@api_router.get("/contacts", response_model=List[Contact])
-async def get_contacts(skip: int = 0, limit: int = 100):
-    try:
-        items = await db.contacts.find().skip(skip).limit(limit).sort("created_at", -1).to_list(limit)
-        return [Contact(**i) for i in items]
-    except Exception as e:
-        logger.error(f"get_contacts: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@api_router.get("/industries", response_model=List[Industry])
-async def get_industries():
-    try:
-        if await db.industries.count_documents({}) == 0:
-            await initialize_industries_data()
-        items = await db.industries.find({"is_active": True}).sort("order", 1).to_list(200)
-        return [Industry(**i) for i in items]
-    except Exception as e:
-        logger.error(f"get_industries: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@api_router.get("/industries/{slug}", response_model=Industry)
-async def get_industry_by_slug(slug: str):
-    try:
-        item = await db.industries.find_one({"slug": slug, "is_active": True})
-        if not item:
-            raise HTTPException(status_code=404, detail="Industry not found")
-        return Industry(**item)
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"get_industry_by_slug({slug}): {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@api_router.get("/company", response_model=CompanyInfo)
-async def get_company_info():
-    try:
-        doc = await db.company.find_one({})
-        if not doc:
-            await initialize_company_data()
-            doc = await db.company.find_one({})
-        return CompanyInfo(**doc)
-    except Exception as e:
-        logger.error(f"get_company_info: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@api_router.get("/testimonials", response_model=List[Testimonial])
-async def get_testimonials():
-    try:
-        if await db.testimonials.count_documents({}) == 0:
-            await initialize_testimonials_data()
-        items = await db.testimonials.find({"is_active": True}).sort("order", 1).to_list(200)
-        return [Testimonial(**i) for i in items]
-    except Exception as e:
-        logger.error(f"get_testimonials: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@api_router.get("/success-stories", response_model=List[SuccessStory])
-async def get_success_stories():
-    try:
-        if await db.success_stories.count_documents({}) == 0:
-            await initialize_success_stories_data()
-        items = await db.success_stories.find({"is_active": True}).sort("year", -1).to_list(200)
-        return [SuccessStory(**i) for i in items]
-    except Exception as e:
-        logger.error(f"get_success_stories: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@api_router.post("/chatbot/message", response_model=ChatbotResponse)
-async def chatbot_message(request: ChatbotRequest):
-    try:
-        session_id = request.session_id or str(uuid.uuid4())
-        reply = chatbot_service.generate_response(request.message)
-        await db.chatbot_conversations.update_one(
-            {"session_id": session_id},
-            {
-                "$setOnInsert": {"session_id": session_id, "created_at": datetime.utcnow()},
-                "$push": {
-                    "messages": {
-                        "$each": [
-                            {"text": request.message, "sender": "user", "timestamp": datetime.utcnow()},
-                            {"text": reply, "sender": "bot", "timestamp": datetime.utcnow()},
-                        ]
-                    }
-                },
-                "$set": {"last_activity": datetime.utcnow()},
-            },
-            upsert=True,
-        )
-        return ChatbotResponse(message=reply, session_id=session_id)
-    except Exception as e:
-        logger.error(f"chatbot_message: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
-
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    obj = StatusCheck(**input.model_dump())
-    await db.status_checks.insert_one(obj.model_dump())
-    return obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    items = await db.status_checks.find().to_list(1000)
-    return [StatusCheck(**i) for i in items]
-
-# -----------------------------------------------------------------------------
-# Data init + indexes
-# -----------------------------------------------------------------------------
-async def initialize_industries_data():
-    # (same mock data as you had) — omitted here for brevity
-    # Make sure each item has slug, is_active, created_at
-    data = [ ... ]  # paste your list here unchanged
-    for d in data:
-        d.setdefault("created_at", datetime.utcnow())
-        d.setdefault("is_active", True)
-    await db.industries.insert_many(data)
-    logger.info(f"Initialized {len(data)} industries")
-
-async def initialize_company_data():
-    doc = { ... }  # paste your company_data unchanged
-    await db.company.insert_one(doc)
-    logger.info("Initialized company data")
-
-async def initialize_testimonials_data():
-    data = [ ... ]  # paste your testimonials list unchanged
-    for d in data:
-        d.setdefault("created_at", datetime.utcnow())
-        d.setdefault("is_active", True)
-    await db.testimonials.insert_many(data)
-    logger.info(f"Initialized {len(data)} testimonials")
-
-async def initialize_success_stories_data():
-    data = [ ... ]  # paste your success stories list unchanged
-    for d in data:
-        d.setdefault("created_at", datetime.utcnow())
-        d.setdefault("is_active", True)
-    await db.success_stories.insert_many(data)
-    logger.info(f"Initialized {len(data)} success stories")
+# class CompanyInfo(BaseModel):
+#     # Allow legacy string list or structured Certification objects
+#     certifications: List[Certification | str] = []
+#     solution_partner: Optional[SolutionPartner] = None
 
 
-# Imporved startup
+# class StatusCheck(BaseModel):
+#     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+#     client_name: str
+#     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
-@app.on_event("startup")
-async def on_startup():
-    try:
-        await db.command("ping")
-        logger.info("MongoDB connected")
+# class StatusCheckCreate(BaseModel):
+#     client_name: str
 
-        tasks = [
-            db.industries.create_index("slug", unique=True),
-            db.industries.create_index([("order", 1)]),
-            db.testimonials.create_index([("order", 1)]),
-            db.success_stories.create_index([("year", -1)]),
-        ]
-        # Don’t fail the whole startup if one index already exists, etc.
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        for r in results:
-            if isinstance(r, Exception):
-                logger.info("Index creation note: %s", r)
-    except asyncio.CancelledError:
-        # reload interrupted startup—normal in dev
-        logger.info("Startup cancelled by reload; will retry.")
-        raise
+# # -----------------------------------------------------------------------------
+# # Chatbot service (unchanged)
+# # -----------------------------------------------------------------------------
+# class ChatbotService:
+#     # … keep your existing implementation …
+#     def __init__(self):
+#         self.responses = {
+#             "greeting": [
+#                 "Hello! Welcome to Consulta Technologies. How can I assist you with automation solutions today?",
+#                 "Hi there! I'm here to help you with any questions about our industrial automation services.",
+#                 "Greetings! How may I help you transform your operations with our automation expertise?",
+#             ],
+#             "services": [
+#                 "We provide comprehensive automation solutions across 8 major industries: Power, Cement, Material Handling, Steel, Water, Chemical/Pharmaceutical, Food & Beverages, and Oil & Gas. Which industry interests you?",
+#                 "Our services include SCADA systems, PLC programming, DCS implementation, process optimization, and IoT integration. What specific solution are you looking for?",
+#             ],
+#             "contact": [
+#                 "You can reach us at +91 22 27560593 or email info@consulta.in. Our office is in Navi Mumbai. Would you like to schedule a consultation?",
+#                 "We're located at International Technology Park, Belapur, Navi Mumbai. Call us at +91 22 27560593 for immediate assistance.",
+#             ],
+#             "experience": [
+#                 "Consulta Technologies has 15+ years of experience with 500+ successful projects across various industries and a team of 50+ expert engineers.",
+#                 "Since 2008, we've been delivering automation solutions with a 99% client satisfaction rate and expertise across multiple industrial sectors.",
+#             ],
+#         }
+#         self.industry_responses = {
+#             "power": "Our Power industry solutions include Smart Grid Systems, Renewable Energy Integration, Power Distribution Automation, and Energy Management Systems with advanced SCADA platforms.",
+#             "cement": "For Cement industry, we provide Kiln Optimization, Raw Material Blending Automation, Production Line Control, and Quality Management Systems.",
+#             "steel": "Steel industry automation includes Blast Furnace Control, Rolling Mill Automation, Quality Testing Systems, and Safety Interlock Systems.",
+#             "water": "Water sector solutions cover Treatment Plant Automation, Distribution Network Management, Quality Monitoring, and SCADA-based Control Systems.",
+#             "chemical": "Chemical & Pharmaceutical automation includes Process Control Systems, Batch Manufacturing, Compliance Monitoring, and Safety Systems.",
+#             "food": "Food & Beverage solutions feature Production Line Control, Packaging Automation, Quality Assurance, and Cold Chain Management.",
+#             "oil": "Oil & Gas automation covers Pipeline Monitoring, Refinery Control Systems, Safety Instrumented Systems, and Distribution Automation.",
+#             "material": "Material Handling includes Conveyor Control Systems, Warehouse Automation, Robotic Integration, and Inventory Management.",
+#         }
+
+#     def generate_response(self, message: str) -> str:
+#         msg = message.lower()
+#         if any(w in msg for w in ["hello", "hi", "hey", "greetings"]):
+#             return self._pick("greeting")
+#         if any(w in msg for w in ["service", "solution", "what do you", "automation"]):
+#             return self._pick("services")
+#         if any(w in msg for w in ["contact", "phone", "email", "address", "location"]):
+#             return self._pick("contact")
+#         if any(w in msg for w in ["experience", "years", "projects", "clients"]):
+#             return self._pick("experience")
+#         for k, v in self.industry_responses.items():
+#             if k in msg:
+#                 return v
+#         if any(w in msg for w in ["scada", "plc", "dcs", "hmi", "technology"]):
+#             return "We work with leading automation technologies including Rockwell Automation, Siemens, Schneider Electric, and Honeywell platforms. Our expertise covers SCADA, PLC programming, DCS systems, and HMI development."
+#         if any(w in msg for w in ["price", "cost", "quote", "pricing"]):
+#             return "Our automation solutions are competitively priced based on project scope and requirements. For a detailed quote, please share your specific needs or contact our team at +91 22 27560593."
+#         return self._pick_default()
+
+#     def _pick(self, cat: str) -> str:
+#         import random
+#         return random.choice(self.responses[cat])
+
+#     def _pick_default(self) -> str:
+#         import random
+#         return random.choice([
+#             "Thank you for your inquiry! Could you please provide more details about your automation requirements?",
+#             "I'd be happy to help with that. For detailed technical discussions, I recommend connecting with our expert team at +91 22 27560593.",
+#             "That's a great question about automation! Could you specify which industry or application you're interested in?",
+#             "For comprehensive assistance with your automation needs, please contact our technical team who can provide detailed solutions.",
+#         ])
+
+# chatbot_service = ChatbotService()
+
+# # -----------------------------------------------------------------------------
+# # Root / health (FE testConnection hits "/")
+# # -----------------------------------------------------------------------------
+# @app.get("/")
+# async def root():
+#     return {"message": "Consulta Technologies API", "version": "1.0.0", "status": "active"}
+
+# @app.get("/healthz")
+# async def healthz():
+#     try:
+#         await db.command("ping")
+#         return {"ok": True}
+#     except Exception as e:
+#         return JSONResponse(status_code=503, content={"ok": False, "error": str(e)})
+
+# # -----------------------------------------------------------------------------
+# # API Routes
+# # -----------------------------------------------------------------------------
+# @api_router.post("/contacts", response_model=Contact)
+# async def create_contact(contact_data: ContactCreate):
+#     try:
+#         contact = Contact(**contact_data.model_dump())
+#         contact_dict = contact.model_dump()
+#         res = await db.contacts.insert_one(contact_dict)
+#         if not res.inserted_id:
+#             raise HTTPException(status_code=500, detail="Failed to create contact")
+#         logger.info(f"New contact: {contact.name} <{contact.email}>")
+#         return contact
+#     except Exception as e:
+#         logger.error(f"create_contact: {e}")
+#         raise HTTPException(status_code=500, detail="Internal server error")
+
+# @api_router.get("/contacts", response_model=List[Contact])
+# async def get_contacts(skip: int = 0, limit: int = 100):
+#     try:
+#         items = await db.contacts.find().skip(skip).limit(limit).sort("created_at", -1).to_list(limit)
+#         return [Contact(**i) for i in items]
+#     except Exception as e:
+#         logger.error(f"get_contacts: {e}")
+#         raise HTTPException(status_code=500, detail="Internal server error")
+
+# @api_router.get("/industries", response_model=List[Industry])
+# async def get_industries():
+#     try:
+#         if await db.industries.count_documents({}) == 0:
+#             await initialize_industries_data()
+#         items = await db.industries.find({"is_active": True}).sort("order", 1).to_list(200)
+#         return [Industry(**i) for i in items]
+#     except Exception as e:
+#         logger.error(f"get_industries: {e}")
+#         raise HTTPException(status_code=500, detail="Internal server error")
+
+# @api_router.get("/industries/{slug}", response_model=Industry)
+# async def get_industry_by_slug(slug: str):
+#     try:
+#         item = await db.industries.find_one({"slug": slug, "is_active": True})
+#         if not item:
+#             raise HTTPException(status_code=404, detail="Industry not found")
+#         return Industry(**item)
+#     except HTTPException:
+#         raise
+#     except Exception as e:
+#         logger.error(f"get_industry_by_slug({slug}): {e}")
+#         raise HTTPException(status_code=500, detail="Internal server error")
+
+# @api_router.get("/company", response_model=CompanyInfo)
+# async def get_company_info():
+#     try:
+#         doc = await db.company.find_one({})
+#         if not doc:
+#             await initialize_company_data()
+#             doc = await db.company.find_one({})
+#         return CompanyInfo(**doc)
+#     except Exception as e:
+#         logger.error(f"get_company_info: {e}")
+#         raise HTTPException(status_code=500, detail="Internal server error")
+
+# @api_router.get("/testimonials", response_model=List[Testimonial])
+# async def get_testimonials():
+#     try:
+#         if await db.testimonials.count_documents({}) == 0:
+#             await initialize_testimonials_data()
+#         items = await db.testimonials.find({"is_active": True}).sort("order", 1).to_list(200)
+#         return [Testimonial(**i) for i in items]
+#     except Exception as e:
+#         logger.error(f"get_testimonials: {e}")
+#         raise HTTPException(status_code=500, detail="Internal server error")
+
+# @api_router.get("/success-stories", response_model=List[SuccessStory])
+# async def get_success_stories():
+#     try:
+#         if await db.success_stories.count_documents({}) == 0:
+#             await initialize_success_stories_data()
+#         items = await db.success_stories.find({"is_active": True}).sort("year", -1).to_list(200)
+#         return [SuccessStory(**i) for i in items]
+#     except Exception as e:
+#         logger.error(f"get_success_stories: {e}")
+#         raise HTTPException(status_code=500, detail="Internal server error")
+
+# @api_router.post("/chatbot/message", response_model=ChatbotResponse)
+# async def chatbot_message(request: ChatbotRequest):
+#     try:
+#         session_id = request.session_id or str(uuid.uuid4())
+#         reply = chatbot_service.generate_response(request.message)
+#         await db.chatbot_conversations.update_one(
+#             {"session_id": session_id},
+#             {
+#                 "$setOnInsert": {"session_id": session_id, "created_at": datetime.utcnow()},
+#                 "$push": {
+#                     "messages": {
+#                         "$each": [
+#                             {"text": request.message, "sender": "user", "timestamp": datetime.utcnow()},
+#                             {"text": reply, "sender": "bot", "timestamp": datetime.utcnow()},
+#                         ]
+#                     }
+#                 },
+#                 "$set": {"last_activity": datetime.utcnow()},
+#             },
+#             upsert=True,
+#         )
+#         return ChatbotResponse(message=reply, session_id=session_id)
+#     except Exception as e:
+#         logger.error(f"chatbot_message: {e}")
+#         raise HTTPException(status_code=500, detail="Internal server error")
+
+# @api_router.post("/status", response_model=StatusCheck)
+# async def create_status_check(input: StatusCheckCreate):
+#     obj = StatusCheck(**input.model_dump())
+#     await db.status_checks.insert_one(obj.model_dump())
+#     return obj
+
+# @api_router.get("/status", response_model=List[StatusCheck])
+# async def get_status_checks():
+#     items = await db.status_checks.find().to_list(1000)
+#     return [StatusCheck(**i) for i in items]
+
+# # -----------------------------------------------------------------------------
+# # Data init + indexes
+# # -----------------------------------------------------------------------------
+# async def initialize_industries_data():
+#     # (same mock data as you had) — omitted here for brevity
+#     # Make sure each item has slug, is_active, created_at
+#     data = [ ... ]  # paste your list here unchanged
+#     for d in data:
+#         d.setdefault("created_at", datetime.utcnow())
+#         d.setdefault("is_active", True)
+#     await db.industries.insert_many(data)
+#     logger.info(f"Initialized {len(data)} industries")
+
+# async def initialize_company_data():
+#     doc = { ... }  # paste your company_data unchanged
+#     await db.company.insert_one(doc)
+#     logger.info("Initialized company data")
+
+# async def initialize_testimonials_data():
+#     data = [ ... ]  # paste your testimonials list unchanged
+#     for d in data:
+#         d.setdefault("created_at", datetime.utcnow())
+#         d.setdefault("is_active", True)
+#     await db.testimonials.insert_many(data)
+#     logger.info(f"Initialized {len(data)} testimonials")
+
+# async def initialize_success_stories_data():
+#     data = [ ... ]  # paste your success stories list unchanged
+#     for d in data:
+#         d.setdefault("created_at", datetime.utcnow())
+#         d.setdefault("is_active", True)
+#     await db.success_stories.insert_many(data)
+#     logger.info(f"Initialized {len(data)} success stories")
+
+
+# # Imporved startup
+
+# @app.on_event("startup")
+# async def on_startup():
+#     try:
+#         await db.command("ping")
+#         logger.info("MongoDB connected")
+
+#         tasks = [
+#             db.industries.create_index("slug", unique=True),
+#             db.industries.create_index([("order", 1)]),
+#             db.testimonials.create_index([("order", 1)]),
+#             db.success_stories.create_index([("year", -1)]),
+#         ]
+#         # Don’t fail the whole startup if one index already exists, etc.
+#         results = await asyncio.gather(*tasks, return_exceptions=True)
+#         for r in results:
+#             if isinstance(r, Exception):
+#                 logger.info("Index creation note: %s", r)
+#     except asyncio.CancelledError:
+#         # reload interrupted startup—normal in dev
+#         logger.info("Startup cancelled by reload; will retry.")
+#         raise
 
 
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
+# @app.on_event("shutdown")
+# async def shutdown_db_client():
+#     client.close()
 
-# mount the router
-app.include_router(api_router)
+# # mount the router
+# app.include_router(api_router)

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
 from .db import db
-from .models import Contact, ContactCreate, Industry, CompanyInfo
+from .models import Contact, ContactCreate, Industry, CompanyInfo , Testimonial, SuccessStory
 from datetime import datetime
 
 router = APIRouter(prefix="/api")
@@ -115,3 +115,13 @@ async def get_company_info():
     return CompanyInfo(**merged)
 
 
+
+@router.get("/testimonials", response_model=List[Testimonial])
+async def get_testimonials():
+    items = await db.testimonials.find({"is_active": True}).sort("order", 1).to_list(200)
+    return [Testimonial(**i) for i in items]
+
+@router.get("/success-stories", response_model=List[SuccessStory])
+async def get_success_stories():
+    items = await db.success_stories.find({"is_active": True}).sort("year", -1).to_list(200)
+    return [SuccessStory(**i) for i in items]
