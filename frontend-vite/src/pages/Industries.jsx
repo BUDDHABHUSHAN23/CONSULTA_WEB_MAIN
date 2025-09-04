@@ -2,14 +2,17 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
-import { industries } from "../data/mock";
+import { industriesAPI } from "../services/api";
 
 const Industries = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [industries, setIndustries] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setIsVisible(true);
     window.scrollTo(0, 0);
+    industriesAPI.getAll().then((d) => setIndustries(d)).finally(() => setLoading(false));
   }, []);
 
   return (
@@ -50,7 +53,10 @@ const Industries = () => {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12">
-            {industries.map((industry, index) => (
+            {loading && (
+              <div className="text-gray-500">Loading industries…</div>
+            )}
+            {!loading && industries.map((industry, index) => (
               <div
                 key={industry.id}
                 className={`transition-all duration-1000 ease-out ${

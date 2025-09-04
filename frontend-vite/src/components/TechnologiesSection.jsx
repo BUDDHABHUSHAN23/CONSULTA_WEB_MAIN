@@ -1,13 +1,22 @@
 import React, { useRef, useEffect, useState } from "react";
 import { Cpu, Network, Database, Cloud } from "lucide-react";
-import { technologyStack, companyDetails } from "../data/enhancedContent";
+import { companyAPI } from "../services/api";
 
 const TechnologiesSection = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [techStack, setTechStack] = useState([]);
+  const [certs, setCerts] = useState([]);
   const sectionRef = useRef(null);
 
   useEffect(() => {
+    companyAPI.getInfo().then((d) => {
+      setTechStack(d?.technologies || []);
+      setCerts(d?.certifications || []);
+    }).catch(() => {
+      setTechStack([]);
+      setCerts([]);
+    });
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -61,7 +70,7 @@ const TechnologiesSection = () => {
         >
           {/* Tab Navigation */}
           <div className="flex flex-wrap justify-center gap-2 mb-12">
-            {technologyStack.map((tech, index) => {
+            {techStack.map((tech, index) => {
               const Icon = tabIcons[index];
               return (
                 <button
@@ -88,12 +97,12 @@ const TechnologiesSection = () => {
                   {React.createElement(tabIcons[activeTab], { className: "h-8 w-8 text-gray-700" })}
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  {technologyStack[activeTab].category}
+                  {techStack[activeTab]?.category}
                 </h3>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {technologyStack[activeTab].technologies.map((tech, index) => (
+                {(techStack[activeTab]?.technologies || []).map((tech, index) => (
                   <div
                     key={index}
                     className="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 hover:scale-105 group"
@@ -124,7 +133,7 @@ const TechnologiesSection = () => {
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
-            {companyDetails.certifications.map((cert, index) => (
+            {certs.map((cert, index) => (
               <div
                 key={index}
                 className="p-4 bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300"

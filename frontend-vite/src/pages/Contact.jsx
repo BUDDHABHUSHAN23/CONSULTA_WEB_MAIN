@@ -6,12 +6,17 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { useToast } from "../hooks/use-toast";
-import { companyInfo } from "../data/mock";
+import { companyAPI } from "../services/api";
 import GoogleMapComponent from "../components/GoogleMapComponent";
 import PeekBanner from "../components/PeekBanner";
+import useReveal from "../hooks/useReveal";
 
 const Contact = () => {
-  const [isVisible, setIsVisible] = useState(false);
+  const hero = useReveal(0.1);
+  const leftCol = useReveal(0.2);
+  const formCol = useReveal(0.2);
+  const mapCol = useReveal(0.2);
+  const [companyInfo, setCompanyInfo] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -24,8 +29,8 @@ const Contact = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    setIsVisible(true);
     window.scrollTo(0, 0);
+    companyAPI.getInfo().then(setCompanyInfo).catch(() => setCompanyInfo(null));
   }, []);
 
   const handleInputChange = (e) => {
@@ -71,8 +76,9 @@ const Contact = () => {
       <section className="pt-32 pb-16 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
-            className={`transition-all duration-1000 ease-out ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            ref={hero.ref}
+            className={`transition-all duration-700 ${
+              hero.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
             }`}
           >
             <Link
@@ -116,8 +122,9 @@ const Contact = () => {
           <div className="grid lg:grid-cols-3 gap-16">
             {/* Contact Information */}
             <div
-              className={`transition-all duration-1000 ease-out ${
-                isVisible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"
+              ref={leftCol.ref}
+              className={`transition-all duration-700 ${
+                leftCol.show ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
               }`}
             >
               <div className=" top-8">
@@ -136,11 +143,15 @@ const Contact = () => {
                       </div>
                       <div>
                         <h3 className="font-semibold text-gray-900 mb-2">Address</h3>
-                        <div className="text-gray-600 leading-relaxed">
-                          <div>{companyInfo.address.building}, {companyInfo.address.area}</div>
-                          <div>{companyInfo.address.location}</div>
-                          <div>{companyInfo.address.city}, {companyInfo.address.state} - {companyInfo.address.pincode}</div>
-                        </div>
+                        {companyInfo ? (
+                          <div className="text-gray-600 leading-relaxed">
+                            <div>{companyInfo.address.building}, {companyInfo.address.area}</div>
+                            <div>{companyInfo.address.location}</div>
+                            <div>{companyInfo.address.city}, {companyInfo.address.state} - {companyInfo.address.pincode}</div>
+                          </div>
+                        ) : (
+                          <div className="text-gray-400">Loading address…</div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -156,10 +167,10 @@ const Contact = () => {
                       <div>
                         <h3 className="font-semibold text-gray-900 mb-2">Phone</h3>
                         <a 
-                          href={`tel:${companyInfo.contact.phone}`}
+                          href={companyInfo ? `tel:${companyInfo.contact.phone}` : undefined}
                           className="text-gray-600 hover:text-gray-900 transition-colors"
                         >
-                          {companyInfo.contact.phone}
+                          {companyInfo ? companyInfo.contact.phone : "Loading…"}
                         </a>
                       </div>
                     </div>
@@ -176,10 +187,10 @@ const Contact = () => {
                       <div>
                         <h3 className="font-semibold text-gray-900 mb-2">Email</h3>
                         <a 
-                          href={`mailto:${companyInfo.contact.email}`}
+                          href={companyInfo ? `mailto:${companyInfo.contact.email}` : undefined}
                           className="text-gray-600 hover:text-gray-900 transition-colors"
                         >
-                          {companyInfo.contact.email}
+                          {companyInfo ? companyInfo.contact.email : "Loading…"}
                         </a>
                       </div>
                     </div>
@@ -197,7 +208,7 @@ const Contact = () => {
                       <div>
                         <h3 className="font-semibold text-gray-900 mb-2">Business Hours</h3>
                         <div className="text-gray-600">
-                          {companyInfo.contact.hours}
+                          {companyInfo ? companyInfo.contact.hours : "Loading…"}
                         </div>
                       </div>
                     </div>
@@ -208,8 +219,9 @@ const Contact = () => {
 
             {/* Contact Form */}
             <div
-              className={`transition-all duration-1000 ease-out delay-300 ${
-                isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
+              ref={formCol.ref}
+              className={`transition-all duration-700 ${
+                formCol.show ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
               }`}
             >
               <div className="bg-gray-50 rounded-3xl p-8 lg:p-10">
@@ -342,8 +354,9 @@ const Contact = () => {
 
             {/* Google Maps */}
             <div
-              className={`transition-all duration-1000 ease-out delay-500 ${
-                isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
+              ref={mapCol.ref}
+              className={`transition-all duration-700 ${
+                mapCol.show ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
               }`}
             >
               <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">

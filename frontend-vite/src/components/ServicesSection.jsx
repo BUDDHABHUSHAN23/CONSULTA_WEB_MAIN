@@ -1,13 +1,24 @@
 import React, { useRef, useEffect, useState } from "react";
 import { ArrowRight, Settings, BarChart3, Shield, Smartphone } from "lucide-react";
-import { companyDetails } from "../data/enhancedContent";
+import { companyAPI } from "../services/api";
 
 const ServicesSection = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [activeService, setActiveService] = useState(0);
+  const [capabilities, setCapabilities] = useState([]);
+  const [whyChooseUs, setWhyChooseUs] = useState([]);
   const sectionRef = useRef(null);
 
   useEffect(() => {
+    // fetch company info for capabilities/whyChooseUs
+    companyAPI.getInfo().then((d) => {
+      setCapabilities(d?.capabilities || []);
+      setWhyChooseUs(d?.values?.map(v => ({ title: v.title, description: v.description, icon: "✔" })) || []);
+    }).catch(() => {
+      setCapabilities([]);
+      setWhyChooseUs([]);
+    });
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -55,7 +66,7 @@ const ServicesSection = () => {
 
         {/* Services Grid */}
         <div className="grid lg:grid-cols-2 gap-8">
-          {companyDetails.capabilities.map((service, index) => {
+          {capabilities.map((service, index) => {
             const Icon = icons[index];
             return (
               <div
@@ -89,7 +100,7 @@ const ServicesSection = () => {
 
                   {/* Features List */}
                   <div className="space-y-2 mb-6">
-                    {service.features.map((feature, idx) => (
+                    {(service.features || []).map((feature, idx) => (
                       <div key={idx} className="flex items-center text-sm text-gray-600">
                         <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-3 flex-shrink-0 group-hover:bg-gray-900 transition-colors" />
                         {feature}
@@ -129,7 +140,7 @@ const ServicesSection = () => {
           </h3>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {companyDetails.whyChooseUs.map((reason, index) => (
+            {whyChooseUs.map((reason, index) => (
               <div key={index} className="group">
                 <div
                   className="relative h-full p-6 bg-gray-50 rounded-3xl
@@ -148,7 +159,7 @@ const ServicesSection = () => {
                               transition-all duration-500
                               group-hover:bg-gray-900 group-hover:text-white group-hover:scale-110"
                   >
-                    <span className="text-2xl leading-none">{reason.icon}</span>
+                    <span className="text-2xl leading-none">{reason.icon || "✔"}</span>
                   </div>
 
                   {/* Copy */}

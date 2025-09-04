@@ -960,16 +960,16 @@ class ChatbotResponse(BaseModel):
 class CompanyInfo(BaseModel):
     name: str = "Consulta Technologies Pvt. Ltd."
     tagline: str = "We are an Experienced & Affordable Automation Company!"
-    description: str
-    vision: str
-    mission: str
-    address: Dict[str, Any]
-    contact: Dict[str, str]
-    stats: Dict[str, Any]
-    certifications: List[str]
-    technologies: List[Dict[str, Any]]
-    values: List[Dict[str, str]]
-    capabilities: List[Dict[str, Any]]
+    description: Optional[str] = None
+    vision: Optional[str] = None
+    mission: Optional[str] = None
+    address: Dict[str, Any] = {}
+    contact: Dict[str, str] = {}
+    stats: Dict[str, Any] = {}
+    certifications: List[str | Dict[str, Any]] = []
+    technologies: List[Dict[str, Any]] = []
+    values: List[Dict[str, str]] = []
+    capabilities: List[Dict[str, Any]] = []
 
 
 class Certification(BaseModel):
@@ -993,8 +993,8 @@ class SolutionPartner(BaseModel):
     highlights: List[str] = []
 
 class CompanyInfo(BaseModel):
-    # ...
-    certifications: List[Certification] = []
+    # Allow legacy string list or structured Certification objects
+    certifications: List[Certification | str] = []
     solution_partner: Optional[SolutionPartner] = None
 
 

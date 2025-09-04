@@ -1,17 +1,30 @@
 import React, { useRef, useEffect, useState } from "react";
-import { stats } from "../data/mock";
+import { companyAPI } from "../services/api";
 
 const StatsSection = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [animatedStats, setAnimatedStats] = useState(stats.map(() => 0));
+  const [stats, setStats] = useState([]);
+  const [animatedStats, setAnimatedStats] = useState([]);
   const sectionRef = useRef(null);
 
   useEffect(() => {
+    companyAPI.getInfo().then((d) => {
+      const s = [
+        { number: `${d?.stats?.years_experience || 0}+`, label: "Years of Experience", description: "Delivering automation solutions" },
+        { number: `${d?.stats?.projects_completed || 0}+`, label: "Projects Completed", description: "Across various industries" },
+        { number: `${d?.stats?.expert_engineers || 0}+`, label: "Expert Engineers", description: "Skilled automation specialists" },
+        { number: `${d?.stats?.client_satisfaction || 0}%`, label: "Client Satisfaction", description: "Proven track record" },
+      ];
+      setStats(s);
+      setAnimatedStats(s.map(() => 0));
+    }).catch(() => setStats([]));
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          animateNumbers();
+          // Trigger animation once stats are loaded
+          setTimeout(() => animateNumbers(), 0);
         }
       },
       { threshold: 0.5 }
@@ -22,6 +35,8 @@ const StatsSection = () => {
     }
 
     return () => observer.disconnect();
+  // Intentionally no animateNumbers in deps; we run it on intersection once.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animateNumbers = () => {
