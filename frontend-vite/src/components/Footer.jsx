@@ -90,20 +90,23 @@ const Footer = () => {
                     Follow us
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
-                    {activeSocials.map(({ key, Icon, label }) => (
-                      <a
-                        key={key}
-                        href={socials[key]}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={label}
-                        className="group inline-flex items-center justify-center p-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
-                        title={label}
-                      >
-                        <Icon className="h-5 w-5 text-gray-300 group-hover:text-white transition-colors" />
-                        <span className="sr-only">{label}</span>
-                      </a>
-                    ))}
+                    {activeSocials.map((s) => {
+                      const IconComp = s.Icon;
+                      return (
+                        <a
+                          key={s.key}
+                          href={socials[s.key]}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={s.label}
+                          className="group inline-flex items-center justify-center p-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+                          title={s.label}
+                        >
+                          <IconComp className="h-5 w-5 text-gray-300 group-hover:text-white transition-colors shrink-0" />
+                          <span className="sr-only">{s.label}</span>
+                        </a>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -118,6 +121,8 @@ const Footer = () => {
                   { name: "Industries", path: "/industries" },
                   { name: "Contact", path: "/contact" },
                   { name: "About Us", path: "/about" },
+                  { name: "Careers", path: "/careers" },
+                  { name: "Blogs", path: "/blogs" },
                 ].map((link) => (
                   <Link
                     key={link.name}

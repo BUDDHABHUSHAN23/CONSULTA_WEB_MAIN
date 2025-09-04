@@ -255,13 +255,13 @@ const Contact = () => {
 
 
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-2">
                       Industry *
                     </label>
                     <Input
                       id="industry"
                       name="industry"
-                      type="industry"
+                      type="text"
                       required
                       value={formData.industry}
                       onChange={handleInputChange}
@@ -272,14 +272,13 @@ const Contact = () => {
 
 
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
                       Company *
                     </label>
                     <Input
-                    // here is the mistake 
                       id="company"
                       name="company"  
-                      type="company"
+                      type="text"
                       required
                       value={formData.company}
                       onChange={handleInputChange}

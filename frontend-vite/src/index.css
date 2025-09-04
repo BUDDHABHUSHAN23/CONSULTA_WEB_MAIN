@@ -297,3 +297,7 @@ img { image-rendering: -webkit-optimize-contrast; }
     .shine:hover::after { animation: none; }
   }
 }
+
+
+/* globals.css or index.css */
+@media (min-width: 380px) { .xs\:block { display:block; } }
