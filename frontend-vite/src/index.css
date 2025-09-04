@@ -125,8 +125,18 @@ code {
 
   /* nicer headings with fallback */
   .balance { text-wrap: balance; }
+  @supports (text-wrap: balance) {
+    .text-balance {
+      text-wrap: balance;             /* Chrome 114+, Edge 114+, FF 123+ */
+    }
+  }
+
   @supports not (text-wrap: balance) {
-    .balance { overflow-wrap: anywhere; }
+    .text-balance {
+      overflow-wrap: break-word;      /* Wide support */
+      word-break: break-word;         /* WebKit-friendly fallback */
+      hyphens: auto;                  /* Optional: helps nicer breaks */
+    }
   }
 
   /* micro-smoothness */
@@ -230,3 +240,60 @@ code {
 .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-none::-webkit-scrollbar { display: none; }
 .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Card elevation parity with Associates/Contact */
+.shadow-sm { box-shadow: 0 1px 2px 0 rgba(0,0,0,.04); }
+.hover\\:shadow-md:hover { box-shadow: 0 4px 14px -3px rgba(0,0,0,.08); }
+
+/* Optional: make images crisp at small sizes */
+img { image-rendering: -webkit-optimize-contrast; }
+
+
+
+/* for the about section */
+
+/* --- minimal “glass” card with soft border & hover light --- */
+@layer components {
+  .glass-card {
+    @apply relative rounded-3xl border border-gray-200/70 bg-white/80 shadow-sm;
+    backdrop-filter: saturate(160%) blur(6px);
+  }
+  .glass-card:hover { box-shadow: 0 10px 30px -12px rgba(0,0,0,.12); }
+
+  /* subtle outline glow on focus/hover */
+  .focus-glow {
+    box-shadow:
+      0 0 0 1px rgba(17,24,39,.06),
+      0 8px 30px -12px rgba(0,0,0,.12);
+  }
+
+  /* soft pill */
+  .pill {
+    @apply inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/70 px-3 py-1.5 text-xs text-gray-700;
+  }
+}
+
+/* --- gentle “shine” sweep (prefers-reduced-motion aware) --- */
+@layer utilities {
+  @keyframes card-shine {
+    0%   { transform: translateX(-120%); }
+    100% { transform: translateX(220%); }
+  }
+  .shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .shine::after {
+    content: "";
+    position: absolute; inset: -2px;
+    background: linear-gradient(120deg, transparent 40%, rgba(255,255,255,.45) 50%, transparent 60%);
+    transform: translateX(-120%);
+  }
+  .shine:hover::after {
+    animation: card-shine 1.2s ease-out forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shine:hover::after { animation: none; }
+  }
+}

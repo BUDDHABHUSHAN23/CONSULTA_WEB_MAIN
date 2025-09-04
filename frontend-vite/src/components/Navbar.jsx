@@ -59,12 +59,12 @@ const Navbar = () => {
                 )}
               </Link>
             ))}
-            {/* <Link
+            <Link
               to="/contact"
               className="ml-6 px-6 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-all duration-300 hover:shadow-lg hover:scale-105"
             >
               Get Started     
-            </Link> */}
+            </Link>
             {/* here we will need to add things such are new button or the refactoring the button  */}
           </div>
 
@@ -99,13 +99,13 @@ const Navbar = () => {
                   {item.name}
                 </Link>
               ))}
-              {/* <Link
+              <Link
                 to="/contact"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="block mt-4 px-6 py-3 bg-gray-900 text-white text-center rounded-xl hover:bg-gray-800 transition-all duration-300"
               >
                 Get Started
-              </Link> */}
+              </Link>
             </div>
           </div>
         )}

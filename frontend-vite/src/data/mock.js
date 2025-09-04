@@ -114,6 +114,63 @@ export const industries = [
   }
 ];
 
+// --- Certifications (real image-backed cards) ---
+export const certifications = [
+  {
+    id: "iso-9001",
+    title: "ISO 9001:2015",
+    subtitle: "Quality Management System",
+    body: "United Registrar of Systems (URS), UKAS",
+    certificateNo: "48953/A/0001/UK/En",
+    issuedOn: "2025-07-01",
+    validTill: "2028-06-30",
+    badge: "/badges/iso-9001.png",
+    issuerLogo: "/badges/urs.png",
+    file: "/certs/CE-CTPL_ISO Certificate Exp.dt.300628.pdf",
+    note:
+      "Scope: Sales, Design, Engineering, Application Software Development, Project Commissioning & Services."
+  },
+  {
+    id: "bnf-channel",
+    title: "BNF Technology — Channel Partner",
+    subtitle: "Authorized Channel Partner (India)",
+    body: "BNF Technology Inc.",
+    issuedOn: "2023-01-01",
+    badge: "/badges/iso-14001.svg", // just a neutral badge frame; replace if you have BNF mark
+    file: "/certs/BNF Technology Channel Partner Certificate.pdf",
+    note:
+      "Scope: Sales, Design, Engineering, Application Software Development, Project Commissioning & Services."
+  }
+];
+
+// --- Siemens Solution Partner (with real certificate + dates) ---
+export const solutionPartner = {
+  name: "Siemens Solution Partner",
+  scope: ["PCS 7", "WinCC", "Industrial Communication", "Drives"],
+  tier: "Solution Partner – Automation Drives",
+  since: 2015,
+  certificateId: "Process Control System PCS 7",
+  link: "https://www.siemens.com/partnerfinder",
+  logo: "/logos/siemens-solution-partner.png",
+  certificatePdf: "/certs/Solution_partner.pdf",
+  // Pulled from the certificate: valid through October 2025.
+  validNote: "Certified through Oct 2025",
+  highlights: [
+    "PCS 7 project delivery & lifecycle services",
+    "CEMAT familiarity (classic ‘000’, Mineral ‘001’)",
+    "OPC UA/HDA connectivity & gateways",
+    "Validated templates and libraries"
+  ]
+};
+
+// --- Quality & Safety blurbs (unchanged) ---
+export const policies = {
+  quality:
+    "We operate a documented QMS aligned to ISO 9001:2015. Project delivery uses gated reviews, peer checks, and FAT/SAT records for full traceability.",
+  safety:
+    "We follow ISO 45001:2018 principles. Work permits, LOTO, and JSA are standard—both in commissioning and ongoing service."
+};
+
 export const companyInfo = {
   name: "Consulta Technologies Pvt. Ltd.",
   tagline: "We are an Experienced & Affordable Automation Company!",
@@ -139,6 +196,10 @@ export const companyInfo = {
     twitter: "https://twitter.com/yourhandle",
     github: "https://github.com/yourorg",
   },
+  solution_partner: solutionPartner,
+  certifications_list: certifications,
+  policies,
+
 };
 
 export const stats = [
@@ -229,7 +290,7 @@ export const sampleAssociates = [
   {
     id: "thyssenkrupp",
     name: "ThyssenKrupp",
-    logo: "/logos/thyssenkrupp.svg",
+    logo: "/logos/thyssenkrupp.png",
     website: "https://www.thyssenkrupp.com",
     blurb: "Plant engineering & EPC partner for process industries.",
     industries: ["Cement", "Metals", "Mining"],
@@ -240,7 +301,7 @@ export const sampleAssociates = [
   {
     id: "sandvik",
     name: "Sandvik",
-    logo: "/logos/sandvik.svg",
+    logo: "/logos/sandvik.png",
     website: "https://www.sandvik.com",
     blurb: "Industrial tooling, mining and rock solutions.",
     industries: ["Mining", "Metals"],
@@ -264,7 +325,7 @@ export const sampleAssociates = [
   {
     id: "matrikon",
     name: "Matrikon (Honeywell)",
-    logo: "/logos/matrikon.svg",
+    logo: "/logos/matrikon.jfif",
     website: "https://www.matrikon.com",
     blurb: "OPC UA/DA/HDA connectivity stack enabling secure data exchange.",
     industries: ["Cement", "Oil & Gas", "Power"],
@@ -275,7 +336,7 @@ export const sampleAssociates = [
   {
     id: "kepware",
     name: "Kepware (PTC)",
-    logo: "/logos/kepware.svg",
+    logo: "/logos/kepware.png",
     website: "https://www.ptc.com/en/products/kepware",
     blurb: "Industrial connectivity platform for multi-vendor PLCs and historians.",
     industries: ["Cement", "FMCG", "Automotive"],
@@ -797,6 +858,9 @@ export const sampleAssociates = [
     tags: ["Cement"]
   }
 ];
+
+
+
 
 
 

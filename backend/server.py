@@ -971,6 +971,33 @@ class CompanyInfo(BaseModel):
     values: List[Dict[str, str]]
     capabilities: List[Dict[str, Any]]
 
+
+class Certification(BaseModel):
+    id: str
+    title: str
+    subtitle: Optional[str] = None
+    body: Optional[str] = None
+    certificateNo: Optional[str] = None
+    validTill: Optional[str] = None
+    badge: Optional[str] = None
+    note: Optional[str] = None
+
+class SolutionPartner(BaseModel):
+    name: str
+    scope: List[str] = []
+    tier: Optional[str] = None
+    since: Optional[int] = None
+    certificateId: Optional[str] = None
+    link: Optional[str] = None
+    logo: Optional[str] = None
+    highlights: List[str] = []
+
+class CompanyInfo(BaseModel):
+    # ...
+    certifications: List[Certification] = []
+    solution_partner: Optional[SolutionPartner] = None
+
+
 class StatusCheck(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     client_name: str
