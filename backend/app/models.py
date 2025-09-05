@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional, Dict, Any
+from pydantic import BaseModel, Field, EmailStr , HttpUrl
+from typing import List, Optional, Dict, Any , Literal
 from datetime import datetime
 from enum import Enum
 import uuid
@@ -103,6 +103,28 @@ class SolutionPartner(BaseModel):
     logo: Optional[str] = None
     highlights: List[str] = []
     validNote: Optional[str] = None
+
+
+# ---- Announcements ----
+AnnouncementVariant = Literal["info","warn","promo"]
+
+class AnnouncementIn(BaseModel):
+    title: Optional[str] = Field(None, max_length=120)
+    message: str = Field(..., max_length=500)
+    variant: AnnouncementVariant = "info"
+    cta_text: Optional[str] = None
+    cta_href: Optional[HttpUrl] = None
+    starts_at: Optional[datetime] = None
+    ends_at: Optional[datetime] = None
+    enabled: bool = True
+    priority: int = 100
+    dismissible: bool = True
+    version: int = 1  # bump to force re-show
+
+class AnnouncementOut(AnnouncementIn):
+    id: str
+    updated_at: datetime
+    created_at: datetime
 
 
 class CompanyInfo(BaseModel):

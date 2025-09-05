@@ -10,6 +10,7 @@ import { companyAPI } from "../services/api";
 import GoogleMapComponent from "../components/GoogleMapComponent";
 import PeekBanner from "../components/PeekBanner";
 import useReveal from "../hooks/useReveal";
+// for the noti
 
 const Contact = () => {
   const hero = useReveal(0.1);

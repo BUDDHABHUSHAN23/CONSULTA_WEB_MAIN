@@ -1,18 +1,38 @@
-from fastapi import APIRouter, HTTPException
-from typing import List
-from .db import db
-from .models import Contact, ContactCreate, Industry, CompanyInfo , Testimonial, SuccessStory
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Header
+from typing import List, Optional
 from datetime import datetime
+import os
+
+from bson import ObjectId
+
+from .db import db
+from .models import (
+    Contact, ContactCreate, Industry, CompanyInfo,
+    Testimonial, SuccessStory, AnnouncementIn, AnnouncementOut
+)
+from .services.mailer import send_email, contact_html, NOTIFY_TO
 
 router = APIRouter(prefix="/api")
 
+@router.get("/health")
+async def health():
+    return {"status": "ok"}
+
+# ---------------- Contacts ----------------
 
 @router.post("/contacts", response_model=Contact)
-async def create_contact(contact_data: ContactCreate):
+async def create_contact(contact_data: ContactCreate, bt: BackgroundTasks):
     c = Contact(**contact_data.model_dump())
     res = await db.contacts.insert_one(c.model_dump())
     if not res.inserted_id:
         raise HTTPException(status_code=500, detail="Failed to create contact")
+
+    # fire-and-forget email (only if NOTIFY_TO configured)
+    if NOTIFY_TO:
+        html = contact_html(c.model_dump())
+        subject = f"[Consulta] New website enquiry — {c.name}"
+        bt.add_task(send_email, subject, NOTIFY_TO, html, f"New enquiry from {c.name}")
+
     return c
 
 
@@ -21,6 +41,8 @@ async def get_contacts(skip: int = 0, limit: int = 100):
     items = await db.contacts.find().skip(skip).limit(limit).sort("created_at", -1).to_list(limit)
     return [Contact(**i) for i in items]
 
+
+# ---------------- Industries / Company / Content ----------------
 
 @router.get("/industries", response_model=List[Industry])
 async def get_industries():
@@ -115,13 +137,89 @@ async def get_company_info():
     return CompanyInfo(**merged)
 
 
-
 @router.get("/testimonials", response_model=List[Testimonial])
 async def get_testimonials():
     items = await db.testimonials.find({"is_active": True}).sort("order", 1).to_list(200)
     return [Testimonial(**i) for i in items]
 
+
 @router.get("/success-stories", response_model=List[SuccessStory])
 async def get_success_stories():
     items = await db.success_stories.find({"is_active": True}).sort("year", -1).to_list(200)
     return [SuccessStory(**i) for i in items]
+
+
+# ---------------- Announcements ----------------
+
+def _admin_guard(x_admin_token: Optional[str] = Header(None)):
+    """
+    Minimal admin protection using a header token.
+    Set ADMIN_API_TOKEN in .env and send it from your admin tool:
+      X-Admin-Token: <token>
+    """
+    expected = os.getenv("ADMIN_API_TOKEN")
+    if not expected or x_admin_token != expected:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+def _now():
+    return datetime.utcnow()
+
+def _to_out(doc) -> AnnouncementOut:
+    return AnnouncementOut(
+        id=str(doc["_id"]),
+        title=doc.get("title"),
+        message=doc["message"],
+        variant=doc.get("variant","info"),
+        cta_text=doc.get("cta_text"),
+        cta_href=doc.get("cta_href"),
+        starts_at=doc.get("starts_at"),
+        ends_at=doc.get("ends_at"),
+        enabled=doc.get("enabled", True),
+        priority=doc.get("priority", 100),
+        dismissible=doc.get("dismissible", True),
+        version=doc.get("version", 1),
+        created_at=doc["created_at"],
+        updated_at=doc["updated_at"],
+    )
+
+@router.get("/announcements/public", response_model=List[AnnouncementOut])
+async def list_public_announcements(limit: int = 3):
+    t = _now()
+    q = {
+        "enabled": True,
+        "$and": [
+            {"$or": [{"starts_at": None}, {"starts_at": {"$lte": t}}]},
+            {"$or": [{"ends_at": None}, {"ends_at": {"$gt": t}}]},
+        ],
+    }
+    cur = db.announcements.find(q).sort([("priority", 1), ("updated_at", -1)]).limit(limit)
+    docs = await cur.to_list(limit)
+    return [_to_out(d) for d in docs]
+
+@router.post("/admin/announcements", response_model=AnnouncementOut)
+async def create_announcement(payload: AnnouncementIn, _=Depends(_admin_guard)):
+    now = _now()
+    # 👇 serialize to JSON-safe primitives (str for HttpUrl, etc.)
+    doc = payload.model_dump(mode="json")
+    doc.update({"created_at": now, "updated_at": now})
+    res = await db.announcements.insert_one(doc)
+    saved = await db.announcements.find_one({"_id": res.inserted_id})
+    return _to_out(saved)
+
+@router.put("/admin/announcements/{aid}", response_model=AnnouncementOut)
+async def update_announcement(aid: str, payload: AnnouncementIn, _=Depends(_admin_guard)):
+    oid = ObjectId(aid)
+    exist = await db.announcements.find_one({"_id": oid})
+    if not exist:
+        raise HTTPException(404, "Not found")
+    # 👇 serialize to JSON-safe primitives
+    updates = payload.model_dump(mode="json")
+    # auto-bump version if text changed and no bump provided
+    if updates.get("version", exist.get("version", 1)) <= exist.get("version", 1) and (
+        updates.get("message") != exist.get("message") or updates.get("title") != exist.get("title")
+    ):
+        updates["version"] = exist.get("version", 1) + 1
+    updates["updated_at"] = _now()
+    await db.announcements.update_one({"_id": oid}, {"$set": updates})
+    saved = await db.announcements.find_one({"_id": oid})
+    return _to_out(saved)
