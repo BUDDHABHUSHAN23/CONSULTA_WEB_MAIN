@@ -1,6 +1,6 @@
 {
   "rewrites": [
     { "source": "/api/:path*", "destination": "https://consulta-api-drc7.onrender.com/api/:path*" },
-    { "source": "/:path*", "destination": "/index.html", "missing": [{ "type": "filesystem" }] }
+    { "source": "/:path*" , "destination": "/index.html" }
   ]
 }
