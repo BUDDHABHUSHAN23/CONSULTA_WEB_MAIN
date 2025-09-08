@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef } from "react";
 import useAnnouncements from "../hooks/useAnnouncements";
 import AnnouncementBar from "./AnnouncementBar";
 
-export default function AnnouncementsStrip({ limit = 3 }) {
+export default function AnnouncementsStrip({ limit = 3, onVisible }) {
   const { announcements, loading, error, dismiss } = useAnnouncements({ limit });
   const wrapRef = useRef(null);
 
@@ -20,6 +20,10 @@ export default function AnnouncementsStrip({ limit = 3 }) {
     window.addEventListener("resize", onResize);
     return () => { ro.disconnect(); window.removeEventListener("resize", onResize); };
   }, [announcements.length]);
+
+  useEffect(() => {
+    if (!loading && announcements.length > 0) onVisible?.(announcements);
+  }, [loading, announcements, onVisible]);
 
   if (error || (loading && announcements.length === 0) || announcements.length === 0) return null;
 

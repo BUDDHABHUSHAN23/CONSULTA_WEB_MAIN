@@ -267,21 +267,22 @@ const About = () => {
             </div>
 
             {/* Right: big Siemens partner logo panel */}
-            <div className="relative bg-white">
+            <div className="relative">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(17,17,17,0.04),transparent_55%)]" />
               <div className="p-8 sm:p-12 lg:p-14 flex items-center justify-center">
-                <div className="w-full max-w-[520px] rounded-3xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                <div className="w-full max-w-[520px] rounded-3xl border border-gray-100 bg-white/90 backdrop-blur-xl shadow-xl overflow-hidden">
                   <div className="p-6 sm:p-8">
                     <img
                       src={solutionPartner.logo || "/logos/siemens.svg"}
                       alt="Siemens Solution Partner"
-                      className="w-full max-w-[420px] mx-auto object-contain"
+                      className="w-full max-w-[420px] mx-auto object-contain rounded-xl border border-gray-100 shadow-sm"
                     />
-                    <div className="mt-3 text-center text-xs text-gray-600">
-                      <BadgeCheck className="inline-block h-4 w-4 mr-1 align-[-2px]" />
-                      {solutionPartner.validNote || "Certified partner"}
+                    <div className="mt-4 flex items-center justify-center">
+                      <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-700">
+                        <BadgeCheck className="h-4 w-4 text-gray-900" />
+                        {solutionPartner.validNote || "Certified partner"}
+                      </span>
                     </div>
-                    
                   </div>
                 </div>
               </div>
@@ -317,7 +318,7 @@ const About = () => {
 
               <div className="mt-4 grid gap-2 sm:gap-3 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
                 {solutionPartner.highlights.map((h) => (
-                  <div key={h} className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-4 text-sm text-gray-700">
+                  <div key={h} className="rounded-2xl border border-gray-100 bg-white/80 backdrop-blur-sm shadow-sm p-3 sm:p-4 text-sm text-gray-700">
                     {h}
                   </div>
                 ))}
@@ -359,7 +360,7 @@ const About = () => {
 
             <div className="flex-1 w-full">
               {/* top info strip */}
-              <div className="rounded-3xl border border-gray-200 bg-white p-3 sm:p-4">
+              <div className="rounded-3xl border border-gray-100 bg-white/80 backdrop-blur-sm shadow-sm p-3 sm:p-4">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                   <div className="flex-1 text-[12px] sm:text-sm text-gray-700">
                     <span className="text-gray-600">Portfolio Module:&nbsp;</span>
@@ -374,11 +375,11 @@ const About = () => {
 
               {/* policies */}
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-gray-200 bg-white p-4">
+                <div className="rounded-2xl border border-gray-100 bg-white/80 backdrop-blur-sm shadow-sm p-4">
                   <div className="text-sm font-semibold text-gray-900">Quality Policy</div>
                   <p className="mt-1 text-sm text-gray-700 leading-relaxed">{policies.quality}</p>
                 </div>
-                <div className="rounded-2xl border border-gray-200 bg-white p-4">
+                <div className="rounded-2xl border border-gray-100 bg-white/80 backdrop-blur-sm shadow-sm p-4">
                   <div className="text-sm font-semibold text-gray-900">Safety Policy</div>
                   <p className="mt-1 text-sm text-gray-700 leading-relaxed">{policies.safety}</p>
                 </div>

@@ -18,7 +18,13 @@ export function NotificationsProvider({ children }) {
       read: false,
       href: n.href || null,
     };
-    setItems((prev) => [item, ...prev].slice(0, 50));
+    setItems((prev) => {
+      // prevent exact-duplicate spam based on title+description within recent 20
+      const key = (x) => `${x.title}::${x.description}`;
+      const k = key(item);
+      if (prev.slice(0, 20).some((x) => key(x) === k)) return prev;
+      return [item, ...prev].slice(0, 50);
+    });
     setIsOpen(true);
     return item.id;
   }, []);

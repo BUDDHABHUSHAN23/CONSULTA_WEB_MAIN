@@ -268,7 +268,7 @@ export const sampleAssociates = [
   {
     id: "abb",
     name: "ABB",
-    logo: "/logos/abb.svg",
+    logo: "/logos/abb.png",
     website: "https://new.abb.com",
     blurb: "Electrical & automation solutions for heavy industries and utilities.",
     industries: ["Cement", "Metals", "Chemicals", "Power"],
@@ -349,7 +349,7 @@ export const sampleAssociates = [
   {
     id: "ultratech",
     name: "UltraTech Cement (Aditya Birla)",
-    logo: "/logos/ultratech.svg",
+    logo: "/logos/ultratech.png",
     website: "https://www.ultratechcement.com",
     blurb: "India’s largest cement producer with pan-India presence.",
     industries: ["Cement"],
@@ -371,7 +371,7 @@ export const sampleAssociates = [
   {
     id: "indiacements",
     name: "The India Cements Ltd",
-    logo: "/logos/indiacements.png",
+    logo: "/logos/indiacements.jpg",
     website: "https://www.indiacements.co.in",
     blurb: "Major cement producer serving South India and beyond.",
     industries: ["Cement"],
@@ -393,7 +393,7 @@ export const sampleAssociates = [
   {
     id: "raysut",
     name: "Raysut Cement",
-    logo: "/logos/raysut.png",
+    logo: "/logos/raysut.jpeg",
     website: "https://www.raysutcement.com",
     blurb: "Oman-based cement manufacturer with regional footprint.",
     industries: ["Cement"],
@@ -437,7 +437,7 @@ export const sampleAssociates = [
   {
     id: "deccancement",
     name: "Deccan Cements Ltd",
-    logo: "/logos/deccan.png",
+    logo: "/logos/deccan.jpg",
     website: "https://www.deccancement.com",
     blurb: "Cement manufacturer from South India.",
     industries: ["Cement"],
@@ -459,7 +459,7 @@ export const sampleAssociates = [
   {
     id: "anjani",
     name: "Anjani Portland Cement",
-    logo: "/logos/anjani.png",
+    logo: "/logos/anjani.jfif",
     website: "https://www.anjanicement.com",
     blurb: "Andhra Pradesh based cement producer.",
     industries: ["Cement"],
@@ -470,7 +470,7 @@ export const sampleAssociates = [
   {
     id: "jindalsp",
     name: "Jindal Steel & Power",
-    logo: "/logos/jindalsp.svg",
+    logo: "/logos/jindalsp.png",
     website: "https://www.jindalsteelpower.com",
     blurb: "Integrated steel and power producer.",
     industries: ["Steel", "Power"],
@@ -481,7 +481,7 @@ export const sampleAssociates = [
   {
     id: "holcim",
     name: "Holcim",
-    logo: "/logos/holcim.svg",
+    logo: "/logos/holcim.png",
     website: "https://www.holcim.com",
     blurb: "Global building materials leader.",
     industries: ["Cement", "Materials"],
@@ -494,7 +494,7 @@ export const sampleAssociates = [
   {
     id: "lnt",
     name: "Larsen & Toubro (L&T)",
-    logo: "/logos/lnt.svg",
+    logo: "/logos/lnt.png",
     website: "https://www.larsentoubro.com",
     blurb: "EPC and industrial solutions across process plants.",
     industries: ["Cement", "Power", "Metals", "Oil & Gas"],
@@ -505,7 +505,7 @@ export const sampleAssociates = [
   {
     id: "walchandnagar",
     name: "Walchandnagar Industries",
-    logo: "/logos/walchandnagar.png",
+    logo: "/logos/walchandnagar.jfif",
     website: "https://www.walchandnagar.com",
     blurb: "Engineering & manufacturing for industrial plants.",
     industries: ["Cement", "Power"],
@@ -529,7 +529,7 @@ export const sampleAssociates = [
   {
     id: "tata",
     name: "Tata",
-    logo: "/logos/tata.svg",
+    logo: "/logos/tata.png",
     website: "https://www.tata.com",
     blurb: "Diversified industrial group.",
     industries: ["Power", "Steel", "Automotive"],
@@ -540,7 +540,7 @@ export const sampleAssociates = [
   {
     id: "tatapower",
     name: "Tata Power",
-    logo: "/logos/tatapower.svg",
+    logo: "/logos/tatapower.jpg",
     website: "https://www.tatapower.com",
     blurb: "India’s largest integrated power company.",
     industries: ["Power", "Utilities"],
@@ -551,7 +551,7 @@ export const sampleAssociates = [
   {
     id: "gail",
     name: "GAIL (India) Limited",
-    logo: "/logos/gail.svg",
+    logo: "/logos/gail.png",
     website: "https://www.gailonline.com",
     blurb: "India’s leading natural gas company.",
     industries: ["Oil & Gas", "Power"],
@@ -564,7 +564,7 @@ export const sampleAssociates = [
   {
     id: "jsw-cement",
     name: "JSW Cement",
-    logo: "/logos/jswcement.svg",
+    logo: "/logos/jswcement.png",
     website: "https://www.jswcement.in",
     blurb: "Leading manufacturer of green cement in India.",
     industries: ["Cement"],
@@ -577,7 +577,7 @@ export const sampleAssociates = [
   {
     id: "johnson-johnson",
     name: "Johnson & Johnson",
-    logo: "/logos/jnj.svg",
+    logo: "/logos/jnj.png",
     website: "https://www.jnj.com",
     blurb: "Healthcare and consumer health products.",
     industries: ["Pharma", "FMCG"],
@@ -588,7 +588,7 @@ export const sampleAssociates = [
   {
     id: "dr-reddys",
     name: "Dr. Reddy’s",
-    logo: "/logos/drreddys.svg",
+    logo: "/logos/drreddys.png",
     website: "https://www.drreddys.com",
     blurb: "Global pharmaceutical manufacturer.",
     industries: ["Pharma"],
@@ -599,7 +599,7 @@ export const sampleAssociates = [
   {
     id: "wockhardt",
     name: "Wockhardt",
-    logo: "/logos/wockhardt.svg",
+    logo: "/logos/wockhardt.jfif",
     website: "https://www.wockhardt.com",
     blurb: "Pharmaceutical and biotechnology company.",
     industries: ["Pharma"],
@@ -610,7 +610,7 @@ export const sampleAssociates = [
   {
     id: "mylan",
     name: "Mylan (Viatris)",
-    logo: "/logos/mylan.svg",
+    logo: "/logos/mylan.png",
     website: "https://www.viatris.com",
     blurb: "Global generics and specialty pharma (now Viatris).",
     industries: ["Pharma"],
@@ -621,7 +621,7 @@ export const sampleAssociates = [
   {
     id: "pall",
     name: "Pall Corporation",
-    logo: "/logos/pall.svg",
+    logo: "/logos/pall.jpg",
     website: "https://www.pall.com",
     blurb: "Filtration and separation solutions for life sciences and industry.",
     industries: ["Pharma", "Chemicals"],
@@ -643,7 +643,7 @@ export const sampleAssociates = [
   {
     id: "solvay",
     name: "Solvay",
-    logo: "/logos/solvay.svg",
+    logo: "/logos/solvay.jfif",
     website: "https://www.solvay.com",
     blurb: "Materials and specialty chemicals.",
     industries: ["Chemicals"],
@@ -654,7 +654,7 @@ export const sampleAssociates = [
   {
     id: "cocacola",
     name: "Coca-Cola",
-    logo: "/logos/cocacola.svg",
+    logo: "/logos/cocacola.png",
     website: "https://www.coca-cola.com",
     blurb: "Beverages and FMCG manufacturing.",
     industries: ["FMCG"],
@@ -665,7 +665,7 @@ export const sampleAssociates = [
   {
     id: "godrej",
     name: "Godrej",
-    logo: "/logos/godrej.svg",
+    logo: "/logos/godrej.png",
     website: "https://www.godrej.com",
     blurb: "Diversified Indian conglomerate with FMCG and industrial interests.",
     industries: ["FMCG", "Industrial"],
@@ -678,7 +678,7 @@ export const sampleAssociates = [
   {
     id: "gipl",
     name: "IG Petrochemicals",
-    logo: "/logos/igpetro.svg",
+    logo: "/logos/igpetro.png",
     website: "https://www.igpetro.com",
     blurb: "Phthalic Anhydride and petrochemical products.",
     industries: ["Chemicals"],
@@ -689,7 +689,7 @@ export const sampleAssociates = [
   {
     id: "usha-martin",
     name: "Usha Martin",
-    logo: "/logos/ushamartin.svg",
+    logo: "/logos/ushamartin.png",
     website: "https://www.ushamartin.com",
     blurb: "Steel wire ropes and specialty wires.",
     industries: ["Steel", "Mining", "Oil & Gas"],
@@ -700,7 +700,7 @@ export const sampleAssociates = [
   {
     id: "raychemrpg",
     name: "Raychem RPG",
-    logo: "/logos/raychemrpg.svg",
+    logo: "/logos/raychemrpg.jpg",
     website: "https://www.raychemrpg.com",
     blurb: "Energy, power and infrastructure products.",
     industries: ["Power", "Utilities", "Oil & Gas"],
@@ -711,7 +711,7 @@ export const sampleAssociates = [
   {
     id: "gulf-galaxy-iec",
     name: "Galaxy IEC India Pvt. Ltd.",
-    logo: "/logos/galaxy-iec.png",
+    logo: "/logos/galaxy-iec.jfif",
     website: null,
     blurb: "Industrial electrical and engineering company.",
     industries: ["Industrial"],
@@ -722,7 +722,7 @@ export const sampleAssociates = [
   {
     id: "gail-bajaja",
     name: "Bajaj Group",
-    logo: "/logos/bajaj.svg",
+    logo: "/logos/bajaj.png",
     website: "https://www.bajajgroup.org",
     blurb: "Diversified Indian group (electrical, energy, consumer).",
     industries: ["Industrial", "Energy"],
@@ -735,7 +735,7 @@ export const sampleAssociates = [
   {
     id: "ltc",
     name: "L&T Constructions",
-    logo: "/logos/ltc.svg",
+    logo: "/logos/ltc.jpg",
     website: "https://www.lntecc.com",
     blurb: "EPC for large industrial and infra projects.",
     industries: ["Cement", "Power", "Oil & Gas"],
@@ -757,7 +757,7 @@ export const sampleAssociates = [
   {
     id: "adhunik",
     name: "Adhunik Group",
-    logo: "/logos/adhunik.png",
+    logo: "/logos/adhunik.jfif",
     website: "https://www.adhunikgroup.com",
     blurb: "Steel and power group.",
     industries: ["Steel", "Power"],
@@ -792,7 +792,7 @@ export const sampleAssociates = [
   {
     id: "hpcl",
     name: "Hindustan Petroleum (HP)",
-    logo: "/logos/hpcl.svg",
+    logo: "/logos/hpcl.jpg",
     website: "https://www.hindustanpetroleum.com",
     blurb: "Oil & gas downstream and retail.",
     industries: ["Oil & Gas"],
@@ -849,7 +849,7 @@ export const sampleAssociates = [
   {
     id: "zuari-italcementi-group",
     name: "Italcementi Group (Zuari Cement)",
-    logo: "/logos/zuari-italcementi.png",
+    logo: "/logos/zuari-italcementi.jpg",
     website: "https://www.heidelbergmaterials.com",
     blurb: "Global cement and materials.",
     industries: ["Cement"],

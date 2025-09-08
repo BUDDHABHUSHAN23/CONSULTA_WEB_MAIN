@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Header
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Header , Query 
 from typing import List, Optional
 from datetime import datetime
 import os
@@ -237,14 +237,52 @@ async def update_announcement(aid: str, payload: AnnouncementIn, _=Depends(_admi
 # ---------------- Products ----------------
 
 def _to_product(doc) -> ProductOut:
-    return ProductOut(**{
-        **doc,
-        "id": str(doc.get("_id", doc.get("id"))),
-    })
+    # allow both Mongo _id and logical id field
+    data = {**doc}
+    data["id"] = str(doc.get("_id", doc.get("id")))
+    return ProductOut(**data)
 
 @router.get("/products", response_model=List[ProductOut])
-async def list_products():
-    docs = await db.products.find({"enabled": True}).sort("order", 1).to_list(500)
+async def list_products(
+    q: Optional[str] = Query(None, description="Text search on title/tagline/categories"),
+    category: Optional[str] = Query(None, description="Filter by single category"),
+    limit: int = Query(200, ge=1, le=500),
+    skip: int = Query(0, ge=0),
+    sort: Optional[str] = Query(None, description="order|title|created|popularity"),
+    order: int = Query(1, description="1 asc, -1 desc"),
+):
+    """
+    Lightweight search that matches your FE filtering.
+    """
+    mongo_query = {"enabled": True}
+
+    if q:
+        # Basic OR match; if you have text indexes you can switch to $text
+        q_rx = {"$regex": q, "$options": "i"}
+        mongo_query["$or"] = [
+            {"title": q_rx},
+            {"tagline": q_rx},
+            {"categories": q_rx},
+        ]
+
+    if category and category.strip().lower() not in ("all", ""):
+        mongo_query["categories"] = category
+
+    # sort mapping to mongodb keys
+    sort_map = {
+        "order": ("order", 1),
+        "title": ("title", 1),
+        "created": ("created_at", -1),
+        "popularity": ("popularity", -1),
+    }
+    if sort in sort_map:
+        key, default_dir = sort_map[sort]
+        dir_ = order if order in (1, -1) else default_dir
+        cur = db.products.find(mongo_query).sort(key, dir_).skip(skip).limit(limit)
+    else:
+        cur = db.products.find(mongo_query).sort("order", 1).skip(skip).limit(limit)
+
+    docs = await cur.to_list(length=limit)
     return [_to_product(d) for d in docs]
 
 @router.get("/products/{slug}", response_model=ProductOut)
@@ -257,7 +295,7 @@ async def get_product(slug: str):
 @router.post("/admin/products", response_model=ProductOut)
 async def create_product(payload: ProductIn, _=Depends(_admin_guard)):
     now = _now()
-    doc = payload.model_dump()
+    doc = payload.model_dump(mode="json")
     doc.update({"created_at": now, "updated_at": now})
     res = await db.products.insert_one(doc)
     saved = await db.products.find_one({"_id": res.inserted_id})
@@ -269,7 +307,7 @@ async def update_product(pid: str, payload: ProductIn, _=Depends(_admin_guard)):
     exist = await db.products.find_one({"_id": oid})
     if not exist:
         raise HTTPException(404, "Not found")
-    updates = payload.model_dump()
+    updates = payload.model_dump(mode="json")
     updates["updated_at"] = _now()
     await db.products.update_one({"_id": oid}, {"$set": updates})
     saved = await db.products.find_one({"_id": oid})

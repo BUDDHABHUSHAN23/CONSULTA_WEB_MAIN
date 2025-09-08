@@ -160,18 +160,92 @@ class CompanyInfo(BaseModel):
     solution_partner: Optional[SolutionPartner] = None
 
 
+
+
+# --- helpers ----
+
+def _is_http_url_or_blank(v: Optional[str]) -> Optional[str]:
+    if v is None:
+        return None
+    v = str(v).strip()
+    if not v:
+        return None
+    u = urlparse(v)
+    if u.scheme in ("http", "https") and u.netloc:
+        return v
+    raise ValueError("Must be an absolute http(s) URL")
+
+class LinkItem(BaseModel):
+    label: Optional[str] = None
+    url: str
+
+    @field_validator("url")
+    @classmethod
+    def _check_url(cls, v: str) -> str:
+        return _is_http_url_or_blank(v)  # will raise if bad
+
+class StoreItem(BaseModel):
+    name: str
+    url: Optional[str] = None
+    region: Optional[str] = None
+
+    @field_validator("url")
+    @classmethod
+    def _check_url(cls, v: Optional[str]) -> Optional[str]:
+        return _is_http_url_or_blank(v)
+
+class RelatedItem(BaseModel):
+    slug: str
+    title: Optional[str] = None
+    tagline: Optional[str] = None
+    logo: Optional[str] = None
+
+    @field_validator("logo")
+    @classmethod
+    def _check_logo(cls, v: Optional[str]) -> Optional[str]:
+        return _is_http_url_or_blank(v)
+
 # ---- Products ----
 class ProductIn(BaseModel):
+    # existing
     title: str
     slug: str
     tagline: Optional[str] = None
     description: Optional[str] = None
     logo: Optional[str] = None
     website: Optional[str] = None
-    features: List[str] = []
-    categories: List[str] = []
+    features: List[str] = Field(default_factory=list)
+    categories: List[str] = Field(default_factory=list)
     enabled: bool = True
     order: int = 0
+
+    # NEW — to power your ProductDetail + Products pages
+    integrations: List[str] = Field(default_factory=list)
+    compatibility: List[str] = Field(default_factory=list)
+
+    docs: List[LinkItem] = Field(default_factory=list)
+    resources: List[LinkItem] = Field(default_factory=list)
+
+    insights: List[str] = Field(default_factory=list)         # internal bullets
+    internal_notes: Optional[str] = None                      # internal long text
+
+    specs: Dict[str, Any] = Field(default_factory=dict)       # key-value quick facts
+    industries: List[str] = Field(default_factory=list)
+    use_cases: List[str] = Field(default_factory=list)
+
+    stores: List[StoreItem] = Field(default_factory=list)
+    pricing: Optional[str] = None
+    license_note: Optional[str] = None
+
+    related: List[RelatedItem] = Field(default_factory=list)
+
+    badge: Optional[str] = None          # e.g. "NEW", "POPULAR"
+    popularity: Optional[int] = None     # for sorting if you like
+
+    @field_validator("logo", "website")
+    @classmethod
+    def _check_http_urls(cls, v: Optional[str]) -> Optional[str]:
+        return _is_http_url_or_blank(v)
 
 class ProductOut(ProductIn):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))

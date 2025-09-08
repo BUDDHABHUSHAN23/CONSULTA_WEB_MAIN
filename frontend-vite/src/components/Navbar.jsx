@@ -77,24 +77,32 @@ const Navbar = () => {
             </Link> */}
             {/* Notifications bell */}
             <AnimatedBell
-              className="ml-2 hover:bg-green-500"
+              className="ml-2 hover:bg-sky-500"
               count={totalCount}
               animate={totalCount > 0}
-              onClick={() => setIsOpen(true)}
+              onClick={() => setIsOpen((v) => !v)}
             />
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            {isMobileMenuOpen ? (
-              <X className="h-6 w-6 text-gray-900" />
-            ) : (
-              <Menu className="h-6 w-6 text-gray-900" />
-            )}
-          </button>
+          {/* Mobile actions */}
+          <div className="md:hidden flex items-center gap-2">
+            <AnimatedBell
+              className="p-2 rounded-lg hover:bg-black/5"
+              count={totalCount}
+              animate={totalCount > 0}
+              onClick={() => setIsOpen((v) => !v)}
+            />
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              {isMobileMenuOpen ? (
+                <X className="h-6 w-6 text-gray-900" />
+              ) : (
+                <Menu className="h-6 w-6 text-gray-900" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}

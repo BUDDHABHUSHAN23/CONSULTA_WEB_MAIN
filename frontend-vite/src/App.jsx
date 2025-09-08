@@ -16,7 +16,8 @@ import Blogs from "./pages/Blogs";
 import IndustryDetail from "./pages/IndustryDetail";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
-import AnnouncementsStrip from "./components/AnnouncementsStrip";
+import { useNotifications } from "./components/ui/NotificationsProvider";
+import { getPublicAnnouncements } from "./services/api";
 import { NotificationsProvider } from "./components/ui/NotificationsProvider";
 import NotificationPanel from "./components/ui/NotificationPanel";
 
@@ -30,7 +31,7 @@ export default function App() {
       <div className="App min-h-screen bg-white">
         
         <Navbar />
-        <AnnouncementsStrip />
+        <AnnouncementsFeed />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/industries" element={<Industries />} />
@@ -51,4 +52,25 @@ export default function App() {
       </div>
     </NotificationsProvider>
   );
+}
+
+function AnnouncementsFeed() {
+  const { add } = useNotifications();
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const list = await getPublicAnnouncements(3);
+        if (!Array.isArray(list)) return;
+        list.forEach((a) => {
+          add({
+            title: a.title || "Announcement",
+            description: a.message,
+            type: a.variant === "warn" ? "warning" : "info",
+            href: a.cta_href || null,
+          });
+        });
+      } catch {}
+    })();
+  }, [add]);
+  return null;
 }
