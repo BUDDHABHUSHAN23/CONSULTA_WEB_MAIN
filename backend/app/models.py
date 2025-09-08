@@ -1,8 +1,9 @@
-from pydantic import BaseModel, Field, EmailStr , HttpUrl
+from pydantic import BaseModel, Field, EmailStr , HttpUrl , field_validator
 from typing import List, Optional, Dict, Any , Literal
 from datetime import datetime
 from enum import Enum
 import uuid
+from urllib.parse import urlparse
 
 
 class ContactStatus(str, Enum):
@@ -106,20 +107,38 @@ class SolutionPartner(BaseModel):
 
 
 # ---- Announcements ----
-AnnouncementVariant = Literal["info","warn","promo"]
+AnnouncementVariant = Literal["info", "warn", "promo"]
 
 class AnnouncementIn(BaseModel):
     title: Optional[str] = Field(None, max_length=120)
     message: str = Field(..., max_length=500)
     variant: AnnouncementVariant = "info"
     cta_text: Optional[str] = None
-    cta_href: Optional[HttpUrl] = None
+    cta_href: Optional[str] = None          # <-- string, not HttpUrl
     starts_at: Optional[datetime] = None
     ends_at: Optional[datetime] = None
     enabled: bool = True
     priority: int = 100
     dismissible: bool = True
     version: int = 1  # bump to force re-show
+
+    @field_validator("cta_href", mode="before")
+    @classmethod
+    def allow_relative_or_absolute(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return None
+        v = str(v).strip()
+        if not v:
+            return None
+        # common paste mistake: "/https://..."
+        if v.startswith("/http://") or v.startswith("/https://"):
+            v = v.lstrip("/")  # normalize to proper absolute url
+        if v.startswith("/"):
+            return v  # site-relative OK
+        u = urlparse(v)
+        if u.scheme in ("http", "https") and u.netloc:
+            return v  # absolute OK
+        raise ValueError("cta_href must be an absolute http(s) URL or a site path starting with '/'")
 
 class AnnouncementOut(AnnouncementIn):
     id: str

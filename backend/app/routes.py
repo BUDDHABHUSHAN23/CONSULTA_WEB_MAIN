@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Header
 from typing import List, Optional
 from datetime import datetime
 import os
+from pydantic import ValidationError
 
 from bson import ObjectId
 
@@ -194,7 +195,14 @@ async def list_public_announcements(limit: int = 3):
     }
     cur = db.announcements.find(q).sort([("priority", 1), ("updated_at", -1)]).limit(limit)
     docs = await cur.to_list(limit)
-    return [_to_out(d) for d in docs]
+    out = []
+    for d in docs:
+        try:
+            out.append(_to_out(d))
+        except ValidationError:
+            # log and skip the bad row
+            pass
+    return out
 
 @router.post("/admin/announcements", response_model=AnnouncementOut)
 async def create_announcement(payload: AnnouncementIn, _=Depends(_admin_guard)):

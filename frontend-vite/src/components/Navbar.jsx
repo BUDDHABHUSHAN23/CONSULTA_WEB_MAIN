@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
+import AnimatedBell from "./ui/AnimatedBell";
+// import useAnnouncements from "../hooks/useAnnouncements";
+import { useNotifications } from "./ui/NotificationsProvider";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  // Announcements are shown via the top strip; we don't count them in the bell
+  const { unreadCount, setIsOpen } = useNotifications();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,13 +28,17 @@ const Navbar = () => {
     { name: "About Us" ,path:"/About"},
   ];
 
+  // Only notifications affect the badge; announcements are shown in the strip
+  const totalCount = unreadCount;
+
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${
+      className={`fixed left-0 right-0 z-50 transition-all duration-500 ease-out ${
         isScrolled
           ? "bg-white/80 backdrop-blur-xl border-b border-gray-200/20 shadow-sm"
           : "bg-transparent"
       }`}
+      style={{ top: 'var(--ann-bar-h, 0px)' }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
@@ -61,11 +70,17 @@ const Navbar = () => {
             ))}
             <Link
               to="/contact"
-              className="ml-6 px-6 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-all duration-300 hover:shadow-lg hover:scale-105"
+              className="ml-2 px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-green-500 transition-all duration-300 hover:shadow-lg hover:scale-105"
             >
               Get Started     
             </Link>
-            {/* here we will need to add things such are new button or the refactoring the button  */}
+            {/* Notifications bell */}
+            <AnimatedBell
+              className="ml-2"
+              count={totalCount}
+              animate={totalCount > 0}
+              onClick={() => setIsOpen(true)}
+            />
           </div>
 
           {/* Mobile Menu Button */}
@@ -102,7 +117,7 @@ const Navbar = () => {
               <Link
                 to="/contact"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="block mt-4 px-6 py-3 bg-gray-900 text-white text-center rounded-xl hover:bg-gray-800 transition-all duration-300"
+                className="block mt-4 px-6 py-3 bg-gray-900 text-white text-center rounded-xl hover:bg-green-500 transition-all duration-300"
               >
                 Get Started
               </Link>

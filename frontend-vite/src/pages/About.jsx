@@ -275,7 +275,7 @@ const About = () => {
                     <img
                       src={solutionPartner.logo || "/logos/siemens.svg"}
                       alt="Siemens Solution Partner"
-                      className="w-full max-w-[420px] mx-auto"
+                      className="w-full max-w-[420px] mx-auto object-contain"
                     />
                     <div className="mt-3 text-center text-xs text-gray-600">
                       <BadgeCheck className="inline-block h-4 w-4 mr-1 align-[-2px]" />

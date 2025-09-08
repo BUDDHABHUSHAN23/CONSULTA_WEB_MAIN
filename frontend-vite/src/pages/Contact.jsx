@@ -5,7 +5,8 @@ import Footer from "../components/Footer";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
-import { useToast } from "../hooks/use-toast";
+import { toast } from "../components/ui/toaster";
+import { useNotifications } from "../components/ui/NotificationsProvider";
 import { companyAPI } from "../services/api";
 import GoogleMapComponent from "../components/GoogleMapComponent";
 import PeekBanner from "../components/PeekBanner";
@@ -27,7 +28,7 @@ const Contact = () => {
     company : "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+  const { add } = useNotifications();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -53,18 +54,27 @@ const Contact = () => {
       // Submit contact form
       await contactAPI.create(formData);
       
-      toast({
-        title: "Message Sent!",
-        description: "Thank you for your inquiry. We'll get back to you soon.",
+      add({
+        title: "Message Sent Successfully",
+        description: "We received your enquiry. We'll contact you within 24 hours.",
+        type: "success",
+      });
+      toast.success("Message Sent Successfully!", {
+        description: "🔔 Thank you for your inquiry. Our team will get back to you within 24 hours.",
+        duration: 5000,
       });
       
       // Reset form
       setFormData({ name: "", email: "", phone: "", message: "",industry: "",company : "" });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send message. Please try again.",
-        variant: "destructive"
+      add({
+        title: "Message failed",
+        description: error.message || "Failed to send message.",
+        type: "error",
+      });
+      toast.error("Error Sending Message", {
+        description: "⚠️ " + (error.message || "Failed to send message. Please try again or contact us directly at +91 22 27560593."),
+        duration: 6000,
       });
     } finally {
       setIsSubmitting(false);
@@ -335,7 +345,7 @@ const Contact = () => {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full px-8 py-4 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed group"
+                    className="w-full px-8 py-4 bg-gray-900 text-white rounded-xl font-medium hover:bg-green-500 apple-button disabled:opacity-50 disabled:cursor-not-allowed group"
                   >
                     {isSubmitting ? (
                       <div className="flex items-center justify-center">

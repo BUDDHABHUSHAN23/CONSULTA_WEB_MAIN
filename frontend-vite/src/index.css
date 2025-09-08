@@ -1,6 +1,89 @@
 @import "tailwindcss";
 @plugin "tailwindcss-animate";
 
+/* Announcement Banner Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.announcement-enter {
+  animation: slideDown 0.3s ease-out;
+}
+
+.announcement-exit {
+  animation: slideUp 0.3s ease-in;
+}
+
+.announcement-fade {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Bell wiggle animation */
+@keyframes bellWiggle {
+  0% { transform: rotate(0deg); }
+  15% { transform: rotate(12deg); }
+  30% { transform: rotate(-10deg); }
+  45% { transform: rotate(8deg); }
+  60% { transform: rotate(-6deg); }
+  75% { transform: rotate(4deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.animate-bell-wiggle {
+  animation: bellWiggle 0.9s ease-in-out both;
+}
+
+/* Apple-like glassmorphism effects */
+.glass-effect {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Apple-like button hover effects */
+.apple-button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+}
+
+.apple-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.apple-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
 /* ---------- Base resets ---------- */
 body {
   margin: 0;
@@ -54,6 +137,12 @@ code {
     --chart-5: 27 87% 67%;
 
     --radius: 0.5rem;
+    
+    /* Apple-like brand colors */
+    --apple-blue: 210 100% 50%;
+    --apple-blue-foreground: 0 0% 98%;
+    --apple-gray: 0 0% 96%;
+    --apple-gray-foreground: 0 0% 9%;
   }
 
   .dark {

@@ -14,6 +14,13 @@ const ChatBot = () => {
       timestamp: new Date()
     }
   ]);
+  
+  const quickActions = [
+    { text: "Our Services", action: "What services do you offer?" },
+    { text: "Industries", action: "Which industries do you serve?" },
+    { text: "Contact Info", action: "How can I contact you?" },
+    { text: "Get Quote", action: "I need a quote for automation" }
+  ];
   const [inputMessage, setInputMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
@@ -171,12 +178,17 @@ const ChatBot = () => {
     }
   };
 
+  const handleQuickAction = (action) => {
+    setInputMessage(action);
+    handleSendMessage();
+  };
+
   if (!isOpen) {
     return (
       <div className="fixed bottom-6 right-6 z-50">
         <button
           onClick={() => setIsOpen(true)}
-          className="group bg-gray-900 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+          className="group bg-gray-900 text-white p-4 rounded-full  hover:bg-green-500 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 apple-button"
         >
           <MessageCircle className="h-6 w-6 group-hover:rotate-12 transition-transform duration-300" />
         </button>
@@ -218,8 +230,26 @@ const ChatBot = () => {
           <>
             {/* Messages */}
             <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50">
+              {/* Quick Actions - only show on first message */}
+              {messages.length === 1 && (
+                <div className="mb-4">
+                  <p className="text-xs text-gray-500 mb-2">Quick actions:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {quickActions.map((action, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleQuickAction(action.action)}
+                        className="px-3 py-1.5 text-xs bg-white border border-gray-200 rounded-full hover:bg-gray-900 hover:text-white hover:border-gray-600 apple-button"
+                      >
+                        {action.text}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               {messages.map((message) => (
                 <div
+                
                   key={message.id}
                   className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
@@ -279,7 +309,7 @@ const ChatBot = () => {
                 <Button
                   onClick={handleSendMessage}
                   disabled={!inputMessage.trim() || isTyping}
-                  className="px-3 py-2 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-2 bg-gray-900 text-white rounded-xl hover:bg-green-500 apple-button disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send className="h-4 w-4" />
                 </Button>

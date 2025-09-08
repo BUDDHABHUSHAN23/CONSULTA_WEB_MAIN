@@ -13,6 +13,7 @@ def make_app() -> FastAPI:
   app = FastAPI(title="Consulta API", version="1.0.0",
                 docs_url="/api/docs", redoc_url="/api/redoc", openapi_url="/api/openapi.json")
   origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
+
   app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in origins if o.strip()],
@@ -20,6 +21,14 @@ def make_app() -> FastAPI:
     allow_methods=["*"],
     allow_headers=["*"],
   )
+
+  origins = [os.getenv("FRONTEND_URL", "http://localhost:5173")]
+  app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins, allow_credentials=True,
+        allow_methods=["*"], allow_headers=["*"]
+    )
+
   app.include_router(api_router)
 
   @app.on_event("startup")

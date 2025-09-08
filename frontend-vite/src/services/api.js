@@ -74,7 +74,14 @@ export const chatbotAPI = {
     (await apiClient.post("/chatbot/message", { message, session_id: sessionId })).data,
 };
 
+export const announcementsAPI = {
+  getPublic: async (limit = 3) => (await apiClient.get(`/announcements/public?limit=${limit}`)).data,
+};
+
 export const testConnection = async () => (await apiClient.get("/")).data;
+
+// Export the getPublicAnnouncements function for backward compatibility
+export const getPublicAnnouncements = announcementsAPI.getPublic;
 
 const api = {
   contact: contactAPI,
@@ -83,7 +90,11 @@ const api = {
   testimonials: testimonialsAPI,
   successStories: successStoriesAPI,
   chatbot: chatbotAPI,
+  announcements: announcementsAPI,
   testConnection,
 };
+
+
+
 
 export default api;
