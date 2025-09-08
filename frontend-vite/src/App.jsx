@@ -69,7 +69,10 @@ function AnnouncementsFeed() {
             href: a.cta_href || null,
           });
         });
-      } catch {}
+      } catch (err) {
+        // Swallow announcement fetch errors silently (network/offline)
+        console.debug('Announcements fetch failed', err);
+      }
     })();
   }, [add]);
   return null;
