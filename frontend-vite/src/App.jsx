@@ -13,6 +13,7 @@ import { Toaster } from "./components/ui/toaster";
 import About from "./pages/About";
 import Careers from "./pages/Careers";
 import Blogs from "./pages/Blogs";
+import IndustryDetail from "./pages/IndustryDetail";
 import AnnouncementsStrip from "./components/AnnouncementsStrip";
 import { NotificationsProvider } from "./components/ui/NotificationsProvider";
 import NotificationPanel from "./components/ui/NotificationPanel";
@@ -31,6 +32,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/industries" element={<Industries />} />
+          <Route path="/industries/:slug" element={<IndustryDetail />} />
           <Route path="/associates" element={<Associates />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />

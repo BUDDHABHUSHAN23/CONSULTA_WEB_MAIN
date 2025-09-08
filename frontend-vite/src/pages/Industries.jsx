@@ -103,13 +103,21 @@ const Industries = () => {
                         ))}
                       </div>
 
-                      <Link
-                        to="/contact"
-                        className="inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 hover:shadow-lg w-fit group"
-                      >
-                        Get Solution
-                        <ArrowLeft className="h-5 w-5 ml-2 rotate-180 group-hover:translate-x-1 transition-transform duration-300" />
-                      </Link>
+                      <div className="flex gap-3">
+                        <Link
+                          to={`/industries/${industry.slug}`}
+                          className="inline-flex items-center px-6 py-3 border border-gray-200 rounded-xl font-medium hover:bg-gray-50 transition-all duration-300 w-fit group"
+                        >
+                          Learn More
+                          <ArrowLeft className="h-5 w-5 ml-2 rotate-180 group-hover:translate-x-1 transition-transform duration-300" />
+                        </Link>
+                        <Link
+                          to="/contact"
+                          className="inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-all duration-300 hover:shadow-lg w-fit group"
+                        >
+                          Get Solution
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </div>
