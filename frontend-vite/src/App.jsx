@@ -14,6 +14,8 @@ import About from "./pages/About";
 import Careers from "./pages/Careers";
 import Blogs from "./pages/Blogs";
 import IndustryDetail from "./pages/IndustryDetail";
+import Products from "./pages/Products";
+import ProductDetail from "./pages/ProductDetail";
 import AnnouncementsStrip from "./components/AnnouncementsStrip";
 import { NotificationsProvider } from "./components/ui/NotificationsProvider";
 import NotificationPanel from "./components/ui/NotificationPanel";
@@ -33,6 +35,8 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/industries" element={<Industries />} />
           <Route path="/industries/:slug" element={<IndustryDetail />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/products/:slug" element={<ProductDetail />} />
           <Route path="/associates" element={<Associates />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />

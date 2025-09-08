@@ -23,9 +23,10 @@ const Navbar = () => {
   const navItems = [
     { name: "Home", path: "/" },
     { name: "Industries", path: "/industries" },
-    { name: "Contact", path: "/contact" },
-    { name:"Associate" ,path:"/Associates"},
+    { name: "Products" ,path:"/Products"},
+    { name:"Associates" ,path:"/Associates"},
     { name: "About Us" ,path:"/About"},
+    { name: "Contact", path: "/contact" },
   ];
 
   // Only notifications affect the badge; announcements are shown in the strip
@@ -68,15 +69,15 @@ const Navbar = () => {
                 )}
               </Link>
             ))}
-            <Link
+            {/* <Link
               to="/contact"
               className="ml-2 px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-full hover:bg-green-500 transition-all duration-300 hover:shadow-lg hover:scale-105"
             >
               Get Started     
-            </Link>
+            </Link> */}
             {/* Notifications bell */}
             <AnimatedBell
-              className="ml-2"
+              className="ml-2 hover:bg-green-500"
               count={totalCount}
               animate={totalCount > 0}
               onClick={() => setIsOpen(true)}
@@ -114,13 +115,13 @@ const Navbar = () => {
                   {item.name}
                 </Link>
               ))}
-              <Link
+              {/* <Link
                 to="/contact"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="block mt-4 px-6 py-3 bg-gray-900 text-white text-center rounded-xl hover:bg-green-500 transition-all duration-300"
               >
                 Get Started
-              </Link>
+              </Link> */}
             </div>
           </div>
         )}

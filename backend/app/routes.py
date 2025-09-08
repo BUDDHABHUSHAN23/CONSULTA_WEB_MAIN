@@ -9,7 +9,8 @@ from bson import ObjectId
 from .db import db
 from .models import (
     Contact, ContactCreate, Industry, CompanyInfo,
-    Testimonial, SuccessStory, AnnouncementIn, AnnouncementOut
+    Testimonial, SuccessStory, AnnouncementIn, AnnouncementOut,
+    ProductIn, ProductOut
 )
 from .services.mailer import send_email, contact_html, NOTIFY_TO
 
@@ -231,3 +232,45 @@ async def update_announcement(aid: str, payload: AnnouncementIn, _=Depends(_admi
     await db.announcements.update_one({"_id": oid}, {"$set": updates})
     saved = await db.announcements.find_one({"_id": oid})
     return _to_out(saved)
+
+
+# ---------------- Products ----------------
+
+def _to_product(doc) -> ProductOut:
+    return ProductOut(**{
+        **doc,
+        "id": str(doc.get("_id", doc.get("id"))),
+    })
+
+@router.get("/products", response_model=List[ProductOut])
+async def list_products():
+    docs = await db.products.find({"enabled": True}).sort("order", 1).to_list(500)
+    return [_to_product(d) for d in docs]
+
+@router.get("/products/{slug}", response_model=ProductOut)
+async def get_product(slug: str):
+    doc = await db.products.find_one({"slug": slug, "enabled": True})
+    if not doc:
+        raise HTTPException(404, "Product not found")
+    return _to_product(doc)
+
+@router.post("/admin/products", response_model=ProductOut)
+async def create_product(payload: ProductIn, _=Depends(_admin_guard)):
+    now = _now()
+    doc = payload.model_dump()
+    doc.update({"created_at": now, "updated_at": now})
+    res = await db.products.insert_one(doc)
+    saved = await db.products.find_one({"_id": res.inserted_id})
+    return _to_product(saved)
+
+@router.put("/admin/products/{pid}", response_model=ProductOut)
+async def update_product(pid: str, payload: ProductIn, _=Depends(_admin_guard)):
+    oid = ObjectId(pid)
+    exist = await db.products.find_one({"_id": oid})
+    if not exist:
+        raise HTTPException(404, "Not found")
+    updates = payload.model_dump()
+    updates["updated_at"] = _now()
+    await db.products.update_one({"_id": oid}, {"$set": updates})
+    saved = await db.products.find_one({"_id": oid})
+    return _to_product(saved)

@@ -74,6 +74,11 @@ export const chatbotAPI = {
     (await apiClient.post("/chatbot/message", { message, session_id: sessionId })).data,
 };
 
+export const productsAPI = {
+  getAll: async () => (await apiClient.get("/products")).data,
+  getBySlug: async (slug) => (await apiClient.get(`/products/${slug}`)).data,
+};
+
 export const announcementsAPI = {
   getPublic: async (limit = 3) => (await apiClient.get(`/announcements/public?limit=${limit}`)).data,
 };
@@ -90,6 +95,7 @@ const api = {
   testimonials: testimonialsAPI,
   successStories: successStoriesAPI,
   chatbot: chatbotAPI,
+  products: productsAPI,
   announcements: announcementsAPI,
   testConnection,
 };

@@ -158,3 +158,22 @@ class CompanyInfo(BaseModel):
     capabilities: List[Dict[str, Any]] = []
     certifications: List[str | Dict[str, Any]] = []
     solution_partner: Optional[SolutionPartner] = None
+
+
+# ---- Products ----
+class ProductIn(BaseModel):
+    title: str
+    slug: str
+    tagline: Optional[str] = None
+    description: Optional[str] = None
+    logo: Optional[str] = None
+    website: Optional[str] = None
+    features: List[str] = []
+    categories: List[str] = []
+    enabled: bool = True
+    order: int = 0
+
+class ProductOut(ProductIn):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
