@@ -1,35 +1,29 @@
-# Backend Docker image for FastAPI (Gunicorn + Uvicorn)
-FROM python:3.11-slim-bookworm
+FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
-
-# System deps
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+    PIP_NO_CACHE_DIR=1 \
+    PORT=8000
 
 WORKDIR /app
 
-# Install dependencies first (leverage Docker layer cache)
-COPY requirements.txt /app/requirements.txt
-RUN pip install --upgrade pip && pip install -r /app/requirements.txt && \
-    pip install gunicorn==21.2.0 uvicorn==0.30.6
+# System tools we actually use (curl for healthcheck)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy backend source
-COPY . /app/
+# Python deps
+COPY backend/requirements.txt .
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Expose app port
+# App code
+COPY backend/ ./
+
 EXPOSE 8000
 
-# Healthcheck (optional)
+# Use your real health endpoint
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl --fail http://localhost:8000/api/ || exit 1
+  CMD curl --fail http://localhost:${PORT}/api/health || exit 1
 
-# Default envs (override in platform)
-ENV CORS_ORIGINS="*"
-
-# Start with Gunicorn + Uvicorn workers
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "2", "-b", "0.0.0.0:8000", "server:app"]
+# Serve FastAPI with Gunicorn+Uvicorn workers
+CMD ["gunicorn","-k","uvicorn.workers.UvicornWorker","-w","2","-b","0.0.0.0:8000","main:app"]
