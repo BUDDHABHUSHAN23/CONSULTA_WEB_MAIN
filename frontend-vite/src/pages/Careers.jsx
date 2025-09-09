@@ -1135,7 +1135,7 @@ function runCareersTests() {
     console.assert(tagCase.length >= 1, "Test: case-insensitive tag search 'wincc' should match at least one role");
 
     // eslint-disable-next-line no-console
-    console.log("Careers page tests passed");
+    // console.log("Careers page tests passed");
   } catch (err) {
     // eslint-disable-next-line no-console
     console.warn("Careers page tests had an issue:", err);
