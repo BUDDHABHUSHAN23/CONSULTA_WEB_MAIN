@@ -6,10 +6,16 @@ export default function AnimatedBell({ count = 0, className = "", size = 20, ani
     <button
       onClick={onClick}
       aria-label="Notifications"
-      className={`relative inline-flex items-center justify-center rounded-full p-2 hover:bg-black/5 transition-colors ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-full p-2 hover:bg-black/5 transition-colors transition-transform hover:rotate-3 active:scale-95 ${className}`}
     >
+      {count > 0 && (
+        <span
+          aria-hidden
+          className="absolute h-6 w-6 rounded-full border border-green-500/50 animate-ping"
+        />
+      )}
       <Bell
-        className={`text-gray-900 ${animate ? "animate-bell-wiggle" : ""}`}
+        className={`text-gray-900 transition-transform ${animate ? "animate-bell-wiggle" : ""}`}
         width={size}
         height={size}
       />

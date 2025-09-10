@@ -5,7 +5,6 @@ import Footer from "../components/Footer";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
-import { toast } from "../components/ui/toaster";
 import { useNotifications } from "../components/ui/NotificationsProvider";
 import { companyAPI } from "../services/api";
 import GoogleMapComponent from "../components/GoogleMapComponent";
@@ -59,11 +58,6 @@ const Contact = () => {
         description: "We received your enquiry. We'll contact you within 24 hours.",
         type: "success",
       });
-      toast.success("Message Sent Successfully!", {
-        description: "🔔 Thank you for your inquiry. Our team will get back to you within 24 hours.",
-        duration: 5000,
-      });
-      
       // Reset form
       setFormData({ name: "", email: "", phone: "", message: "",industry: "",company : "" });
     } catch (error) {
@@ -72,19 +66,15 @@ const Contact = () => {
         description: error.message || "Failed to send message.",
         type: "error",
       });
-      toast.error("Error Sending Message", {
-        description: "⚠️ " + (error.message || "Failed to send message. Please try again or contact us directly at +91 22 27560593."),
-        duration: 6000,
-      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen surface">
       {/* Header */}
-      <section className="pt-32 pb-16 bg-gradient-to-b from-gray-50 to-white">
+      <section className="pt-32 pb-16 bg-gradient-to-b from-secondary to-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
             ref={hero.ref}
@@ -94,13 +84,13 @@ const Contact = () => {
           >
             <Link
               to="/"
-              className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-8 group transition-colors"
+              className="inline-flex items-center text-muted-foreground hover:text-foreground mb-8 group transition-colors"
             >
               <ArrowLeft className="h-5 w-5 mr-2 group-hover:-translate-x-1 transition-transform duration-300" />
               Back to Home
             </Link>
 
-            <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            <h1 className="text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
               Get in
               <br />
               <span className="bg-gradient-to-r from-gray-700 to-gray-900 bg-clip-text text-transparent">
@@ -108,7 +98,7 @@ const Contact = () => {
               </span>
             </h1>
 
-            <p className="text-xl text-gray-600 max-w-3xl leading-relaxed font-light">
+            <p className="text-xl text-muted-foreground max-w-3xl leading-relaxed font-light">
             Ready to transform your operations with cutting-edge automation? We're here to partner with you every step of the way.
             <span className="font-semibold text-gray-900"> Let's explore how our solutions </span>can help you achieve your specific <span className="font-semibold text-gray-900"> goals </span> and drive meaningful results for your business.
             </p> 
@@ -139,23 +129,23 @@ const Contact = () => {
               }`}
             >
               <div className=" top-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">
+                <h2 className="text-3xl font-bold text-foreground mb-8">
                   Corporate Office
                 </h2>
 
                 <div className="space-y-8">
                   {/* Address */}
                   <div className="group">
-                    <div className="flex items-start space-x-4 p-6 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-all duration-300 hover:shadow-md">
+                    <div className="flex items-start space-x-4 p-6 bg-secondary rounded-2xl hover:bg-accent transition-all duration-300 hover:shadow-md">
                       <div className="flex-shrink-0">
-                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300">
+                        <div className="w-12 h-12 bg-card rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300">
                           <MapPin className="h-6 w-6 text-gray-700" />
                         </div>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 mb-2">Address</h3>
+                        <h3 className="font-semibold text-foreground mb-2">Address</h3>
                         {companyInfo ? (
-                          <div className="text-gray-600 leading-relaxed">
+                          <div className="text-muted-foreground leading-relaxed">
                             <div>{companyInfo.address.building}, {companyInfo.address.area}</div>
                             <div>{companyInfo.address.location}</div>
                             <div>{companyInfo.address.city}, {companyInfo.address.state} - {companyInfo.address.pincode}</div>
@@ -169,17 +159,17 @@ const Contact = () => {
 
                   {/* Phone */}
                   <div className="group">
-                    <div className="flex items-start space-x-4 p-6 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-all duration-300 hover:shadow-md">
+                    <div className="flex items-start space-x-4 p-6 bg-secondary rounded-2xl hover:bg-accent transition-all duration-300 hover:shadow-md">
                       <div className="flex-shrink-0">
-                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300">
+                        <div className="w-12 h-12 bg-card rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300">
                           <Phone className="h-6 w-6 text-gray-700" />
                         </div>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 mb-2">Phone</h3>
+                        <h3 className="font-semibold text-foreground mb-2">Phone</h3>
                         <a 
                           href={companyInfo ? `tel:${companyInfo.contact.phone}` : undefined}
-                          className="text-gray-600 hover:text-gray-900 transition-colors"
+                          className="text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {companyInfo ? companyInfo.contact.phone : "Loading…"}
                         </a>
@@ -189,17 +179,17 @@ const Contact = () => {
 
                   {/* Email */}
                   <div className="group">
-                    <div className="flex items-start space-x-4 p-6 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-all duration-300 hover:shadow-md">
+                    <div className="flex items-start space-x-4 p-6 bg-secondary rounded-2xl hover:bg-accent transition-all duration-300 hover:shadow-md">
                       <div className="flex-shrink-0">
-                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300">
+                        <div className="w-12 h-12 bg-card rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300">
                           <Mail className="h-6 w-6 text-gray-700" />
                         </div>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 mb-2">Email</h3>
+                        <h3 className="font-semibold text-foreground mb-2">Email</h3>
                         <a 
                           href={companyInfo ? `mailto:${companyInfo.contact.email}` : undefined}
-                          className="text-gray-600 hover:text-gray-900 transition-colors"
+                          className="text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {companyInfo ? companyInfo.contact.email : "Loading…"}
                         </a>
@@ -210,14 +200,14 @@ const Contact = () => {
                   {/* Also i want to impliement the more functionality of the website  */}
                   {/* Hours */}
                   <div className="group">
-                    <div className="flex items-start space-x-4 p-6 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-all duration-300 hover:shadow-md">
+                    <div className="flex items-start space-x-4 p-6 bg-secondary rounded-2xl hover:bg-accent transition-all duration-300 hover:shadow-md">
                       <div className="flex-shrink-0">
-                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300">
+                        <div className="w-12 h-12 bg-card rounded-xl flex items-center justify-center shadow-sm group-hover:shadow-md transition-all duration-300">
                           <Clock className="h-6 w-6 text-gray-700" />
                         </div>
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 mb-2">Business Hours</h3>
+                        <h3 className="font-semibold text-foreground mb-2">Business Hours</h3>
                         <div className="text-gray-600">
                           {companyInfo ? companyInfo.contact.hours : "Loading…"}
                         </div>
@@ -235,17 +225,17 @@ const Contact = () => {
                 formCol.show ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
               }`}
             >
-              <div className="bg-gray-50 rounded-3xl p-8 lg:p-10">
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              <div className="bg-secondary rounded-3xl p-8 lg:p-10">
+                <h2 className="text-3xl font-bold text-foreground mb-2">
                   Send Message
                 </h2>
-                <p className="text-gray-600 mb-8 leading-relaxed">
+                <p className="text-muted-foreground mb-8 leading-relaxed">
                   Fill out the form below and we'll get back to you within 24 hours.
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
                       Name *
                     </label>
                     <Input
@@ -255,13 +245,13 @@ const Contact = () => {
                       required
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all duration-300"
+                      className="w-full px-4 py-3 bg-card text-foreground border border-border rounded-xl focus:ring-2 focus:ring-ring/10 focus:border-border transition-all duration-300"
                       placeholder="Your full name"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
                       Email *
                     </label>
                     <Input
@@ -271,14 +261,14 @@ const Contact = () => {
                       required
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all duration-300"
+                      className="w-full px-4 py-3 bg-card text-foreground border border-border rounded-xl focus:ring-2 focus:ring-ring/10 focus:border-border transition-all duration-300"
                       placeholder="your@email.com"
                     />
                   </div>
 
 
                   <div>
-                    <label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="industry" className="block text-sm font-medium text-foreground mb-2">
                       Industry *
                     </label>
                     <Input
@@ -288,14 +278,14 @@ const Contact = () => {
                       required
                       value={formData.industry}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all duration-300"
+                      className="w-full px-4 py-3 bg-card text-foreground border border-border rounded-xl focus:ring-2 focus:ring-ring/10 focus:border-border transition-all duration-300"
                       placeholder="e.g., IT, Manufacturing, Healthcare"
                     />
                   </div>
 
 
                   <div>
-                    <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="company" className="block text-sm font-medium text-foreground mb-2">
                       Company *
                     </label>
                     <Input
@@ -305,13 +295,13 @@ const Contact = () => {
                       required
                       value={formData.company}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all duration-300"
+                      className="w-full px-4 py-3 bg-card text-foreground border border-border rounded-xl focus:ring-2 focus:ring-ring/10 focus:border-border transition-all duration-300"
                       placeholder="e.g., Google, Infosys, Reliance"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
                       Phone Number *
                     </label>
                     <Input
@@ -321,13 +311,13 @@ const Contact = () => {
                       required
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all duration-300"
+                      className="w-full px-4 py-3 bg-card text-foreground border border-border rounded-xl focus:ring-2 focus:ring-ring/10 focus:border-border transition-all duration-300"
                       placeholder="+91 98**** *210"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
                       Message *
                     </label>
                     <Textarea
@@ -337,7 +327,7 @@ const Contact = () => {
                       rows={5}
                       value={formData.message}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all duration-300 resize-none"
+                      className="w-full px-4 py-3 bg-card text-foreground border border-border rounded-xl focus:ring-2 focus:ring-ring/10 focus:border-border transition-all duration-300 resize-none"
                       placeholder="Tell us about your automation needs..."
                     />
                   </div>
@@ -370,13 +360,13 @@ const Contact = () => {
                 mapCol.show ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
               }`}
             >
-              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-8 border-b border-gray-100">
+              <div className="bg-card rounded-3xl shadow-sm border border-border overflow-hidden">
+                <div className="p-8 border-b border-border/60">
                   <div className="flex items-center space-x-3 mb-2">
                     <Navigation className="h-6 w-6 text-gray-700" />
                     <h3 className="text-xl font-semibold text-gray-900">Find Us</h3>
                   </div>
-                  <p className="text-gray-600">
+                  <p className="text-muted-foreground">
                     Visit our office for consultations and demonstrations
                   </p>
                 </div>
@@ -385,9 +375,9 @@ const Contact = () => {
                   <GoogleMapComponent />
                 </div>
 
-                <div className="p-6 bg-gray-50">
-                  <div className="text-sm text-gray-600 leading-relaxed">
-                    <div className="font-medium text-gray-900 mb-1">Directions:</div>
+                <div className="p-6 bg-secondary">
+                  <div className="text-sm text-muted-foreground leading-relaxed">
+                    <div className="font-medium text-foreground mb-1">Directions:</div>
                     <div>Located near Belapur Railway Station</div>
                     <div>Easily accessible by local trains and buses</div>
                     <div>Parking available on premises</div>

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Header , Query 
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Header , Query  , Body
 from typing import List, Optional
 from datetime import datetime
 import os
@@ -12,28 +12,65 @@ from .models import (
     Testimonial, SuccessStory, AnnouncementIn, AnnouncementOut,
     ProductIn, ProductOut
 )
-from .services.mailer import send_email, contact_html, NOTIFY_TO
+
+from .services.mailer import (
+    send_contact_notification,   # <-- use this instead of raw send_email
+    check_mailer,
+    send_test_email,
+)
+
+ADMIN_API_TOKEN = os.getenv("ADMIN_API_TOKEN", "")
 
 router = APIRouter(prefix="/api")
+
+
+
+# ---------------- annoucment ---------------
+
+def _admin_guard(x_admin_token: Optional[str] = Header(None)):
+    """
+    Minimal admin protection using a header token.
+    Set ADMIN_API_TOKEN in .env and send it from your admin tool:
+      X-Admin-Token: <token>
+    """
+    expected = os.getenv("ADMIN_API_TOKEN")
+    if not expected or x_admin_token != expected:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+# ---------------- Health check --------------
 
 @router.get("/health")
 async def health():
     return {"status": "ok"}
 
+@router.get("/health/mailer")
+async def mailer_health():
+    return await check_mailer()
+
+@router.post("/health/mailer/test", dependencies=[Depends(_admin_guard)])
+async def mailer_test(to: list[str] = Body(default=[])):
+    # optional: pass explicit recipients; otherwise env NOTIFY_TO (or SMTP_USER) is used
+    return await send_test_email(to=to or None)
 # ---------------- Contacts ----------------
 
 @router.post("/contacts", response_model=Contact)
 async def create_contact(contact_data: ContactCreate, bt: BackgroundTasks):
     c = Contact(**contact_data.model_dump())
+
     res = await db.contacts.insert_one(c.model_dump())
     if not res.inserted_id:
         raise HTTPException(status_code=500, detail="Failed to create contact")
 
-    # fire-and-forget email (only if NOTIFY_TO configured)
-    if NOTIFY_TO:
-        html = contact_html(c.model_dump())
-        subject = f"[Consulta] New website enquiry — {c.name}"
-        bt.add_task(send_email, subject, NOTIFY_TO, html, f"New enquiry from {c.name}")
+    # fire-and-forget email using the helper (handles subject, HTML, text, Reply-To, CC/BCC from env)
+    payload = {
+        "name": c.name,
+        "email": c.email,
+        "phone": c.phone,
+        "company": c.company,
+        "industry": c.industry,
+        "message": c.message,
+    }
+    bt.add_task(send_contact_notification, payload)
 
     return c
 
@@ -152,16 +189,6 @@ async def get_success_stories():
 
 
 # ---------------- Announcements ----------------
-
-def _admin_guard(x_admin_token: Optional[str] = Header(None)):
-    """
-    Minimal admin protection using a header token.
-    Set ADMIN_API_TOKEN in .env and send it from your admin tool:
-      X-Admin-Token: <token>
-    """
-    expected = os.getenv("ADMIN_API_TOKEN")
-    if not expected or x_admin_token != expected:
-        raise HTTPException(status_code=401, detail="Unauthorized")
 
 def _now():
     return datetime.utcnow()

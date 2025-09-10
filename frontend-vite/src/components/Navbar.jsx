@@ -77,7 +77,7 @@ const Navbar = () => {
             </Link> */}
             {/* Notifications bell */}
             <AnimatedBell
-              className="ml-2 hover:bg-sky-500"
+              className="ml-1"
               count={totalCount}
               animate={totalCount > 0}
               onClick={() => setIsOpen((v) => !v)}

@@ -256,7 +256,7 @@ const StatsSection = () => {
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">Trusted by the industry</h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto font-light">
-              Our numbers speak for themselves. Years of dedication to excellence in automation solutions.
+            Built on trust, measured by results. These achievements represent years of delivering cutting-edge solutions that transform industries and exceed expectations.
             </p>
           </div>
 

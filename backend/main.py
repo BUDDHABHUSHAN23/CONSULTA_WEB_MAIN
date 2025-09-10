@@ -5,6 +5,8 @@ from pathlib import Path
 import os
 from app.routes import router as api_router
 from app.db import db
+import logging; logging.basicConfig(level=logging.INFO)
+
 
 ROOT = Path(__file__).parent
 load_dotenv(ROOT / ".env")

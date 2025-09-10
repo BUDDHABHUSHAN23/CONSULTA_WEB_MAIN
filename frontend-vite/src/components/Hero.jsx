@@ -96,13 +96,14 @@ const Hero = () => {
               </span>
             </h1>
           </div>
-
+          
+              {/* CTAs */}
           <div
             className={`transition-all duration-700 ease-out delay-200 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            <p className="mt-6 text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
+            <p className="mt-6 text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light-100">
               We are an experienced &amp; affordable automation company delivering
               cutting-edge solutions across industries with precision and innovation.
             </p>
@@ -114,12 +115,18 @@ const Hero = () => {
             }`}
           >
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-              <Link
+            <Link
                 to="/contact"
-                className="group relative overflow-hidden px-6 sm:px-8 py-3.5 sm:py-4 bg-gray-900 text-white rounded-full font-medium text-base sm:text-lg hover:bg-gray-800 transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] flex items-center gap-2 sm:gap-3 w-full sm:w-auto"
+                className="group relative overflow-hidden
+                          inline-flex items-center gap-2
+                          px-6 py-3 rounded-full
+                          bg-gray-900 text-white
+                          text-base font-medium
+                          hover:bg-gray-800 transition-all duration-300
+                          hover:shadow-2xl sm:hover:scale-[1.02]"
               >
                 Get Started
-                <ArrowRight className="h-5 w-5 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
               </Link>
 
               <button
@@ -145,33 +152,52 @@ const Hero = () => {
           >
             <div className="mt-14 sm:mt-16">
               <p className="text-xs sm:text-sm text-gray-500 font-medium tracking-wide uppercase mb-5 sm:mb-8">
-                Trusted by industry leaders
+                    Partnering with Industry Leaders
               </p>
-
-              <div className="logo-marquee opacity-80" aria-label="Partner logos">
-                <div className="logo-track gap-x-10 sm:gap-x-12 py-2">
+              <div
+                className="
+                  relative w-full overflow-hidden
+                  [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]
+                  [--gap:2.75rem]
+                "
+              >
+                <ul className="
+                  flex items-center min-w-max gap-[var(--gap)]
+                  max-w-full
+                  animate-[logoMarquee_28s_linear_infinite] sm:animate-[logoMarquee_24s_linear_infinite]
+                ">
                   {[...logos, ...logos].map((logo, i) => (
-                    <img
-                      key={i}
-                      src={logo.src}
-                      alt={logo.alt}
-                      loading="lazy"
-                      className="logo-img grayscale opacity-70 hover:grayscale-0 hover:opacity-100 transition-all duration-300 hover:scale-105"
-                    />
+                    <li key={i} className="logo-frame shrink-0">
+                      <img src={logo.src} alt={logo.alt} className="h-7 sm:h-8 grayscale opacity-70" />
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
+
             </div>
           </div>
         </div>
       </div>
 
-      {/* Scroll Indicator (hide on very short viewports) */}
+      {/* Scroll Indicator (hide on very short viewports)
       <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 animate-bounce [@media_(max-height:640px)]:hidden">
         <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
           <div className="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-pulse" />
         </div>
+      </div> */}
+
+      {/* Scroll Indicator (hide on very short viewports) */}
+      <div
+        onClick={() => {
+          window.scrollBy({ top: window.innerHeight * 0.3, behavior: "smooth" });
+        }}
+        className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 animate-bounce [@media_(max-height:640px)]:hidden cursor-pointer"
+      >
+        <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
+          <div className="w-1 h-3 bg-gray-400 rounded-full mt-2 animate-pulse" />
+        </div>
       </div>
+
 
       {/* Video Modal */}
       <Suspense fallback={null}>
