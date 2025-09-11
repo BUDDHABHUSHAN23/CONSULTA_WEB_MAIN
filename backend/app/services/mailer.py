@@ -1,362 +1,293 @@
 # app/services/mailer.py
 from __future__ import annotations
-import os, time, html, logging
-from typing import Iterable, Optional, Tuple
+
+import os, time, ssl, smtplib, asyncio, contextlib
+from typing import Iterable, Optional, Tuple, Dict
 from email.message import EmailMessage
 from email.utils import parseaddr, formatdate, make_msgid
 
-import aiosmtplib
-from aiosmtplib.errors import SMTPAuthenticationError, SMTPDataError, SMTPRecipientsRefused
-
-# --- Env ---
-SMTP_HOST = os.getenv("SMTP_HOST", "localhost")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "25"))
-SMTP_USER = os.getenv("SMTP_USER") or None
-SMTP_PASS = os.getenv("SMTP_PASS") or None
-SMTP_FROM = os.getenv("SMTP_FROM", "Consulta <no-reply@consulta.in>")
+# ========= ENV (keep simple) =========
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.bizmail.yahoo.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "465"))          # Turbify doc prefers 465 SSL/TLS
+SMTP_USER = os.getenv("SMTP_USER") or ""
+SMTP_PASS = os.getenv("SMTP_PASS") or ""                # Use APP PASSWORD (Turbify/Yahoo)
+SMTP_FROM = os.getenv("SMTP_FROM") or SMTP_USER         # Can be "Name <addr>"
 SMTP_ENVELOPE_FROM = os.getenv("SMTP_ENVELOPE_FROM") or SMTP_USER
 MESSAGE_ID_DOMAIN = os.getenv("MAIL_MESSAGE_ID_DOMAIN", "consulta.in")
 
-# Recipients (comma-separated)
+SMTP_TIMEOUT = float(os.getenv("SMTP_TIMEOUT", "20"))
+SMTP_RETRIES = int(os.getenv("SMTP_RETRIES", "2"))
+SMTP_RETRY_BACKOFF_S = float(os.getenv("SMTP_RETRY_BACKOFF_S", "1.2"))
+# ensure this exists once at the top too
+MAIL_HEALTH_MIN_INTERVAL_S = float(os.getenv("MAIL_HEALTH_MIN_INTERVAL_S", "60"))
+_last_health_ts: float | None = None  # cache last health check time
+
+MAIL_EHLO_NAME = os.getenv("MAIL_EHLO_NAME", "consulta.in")  # EHLO/HELO identity
+
+# Only TO list (no cc/bcc)
 def _split_env(name: str) -> tuple[str, ...]:
     return tuple(e.strip() for e in os.getenv(name, "").split(",") if e.strip())
 
-NOTIFY_TO  = _split_env("NOTIFY_TO")
-NOTIFY_CC  = _split_env("NOTIFY_CC")
-NOTIFY_BCC = _split_env("NOTIFY_BCC")
+NOTIFY_TO = _split_env("NOTIFY_TO")
 
-# --- TLS selection ---
-def _tls_kwargs(port: int) -> dict:
-    if port == 465:
-        return {"use_tls": True}
-    if port in (25, 587):
-        return {"start_tls": True}
-    return {}
-
-def _normalize(addrs: Iterable[str]) -> Tuple[str, ...]:
-    out, seen = [], set()
-    for a in (addrs or []):
-        a = (a or "").strip()
-        if not a or "\n" in a or "\r" in a:
-            continue
-        k = a.lower()
-        if k not in seen:
-            out.append(a)
-            seen.add(k)
-    return tuple(out)
-
+# ========= tiny helpers =========
 def _looks_like_email(s: str | None) -> bool:
     if not s or "@" not in s or any(ch in s for ch in ("\r", "\n", " ")):
         return False
     local, _, domain = s.rpartition("@")
     return bool(local and "." in domain)
 
-# pick a safe envelope sender
-ENVELOPE_FROM = SMTP_ENVELOPE_FROM if _looks_like_email(SMTP_ENVELOPE_FROM) else SMTP_USER
+def _normalize(addrs: Iterable[str] | None) -> Tuple[str, ...]:
+    out, seen = [], set()
+    for a in addrs or []:
+        a = (a or "").strip()
+        if not a:
+            continue
+        _, addr = parseaddr(a)
+        key = (addr or a).lower()
+        if key and key not in seen:
+            out.append(addr or a)
+            seen.add(key)
+    return tuple(out)
 
-# ---------- Subject + bodies ----------
 def _ascii_only(s: str) -> str:
-    # Drop non-ASCII to avoid SMTPUTF8/Data policy issues on some servers
     return (s or "").encode("ascii", "ignore").decode("ascii")
 
-def build_subject(c: dict) -> str:
-    name = (c.get("name") or "").strip()
-    company = (c.get("company") or "").strip()
-    # ASCII-only, use plain hyphen instead of em dash
-    base = "[Consulta] New website enquiry"
-    if name:
-        base += f" - {name}"
-    if company:
-        base += f" ({company})"
-    return _ascii_only(base)
+def _envelope_from() -> str:
+    if _looks_like_email(SMTP_ENVELOPE_FROM):
+        return SMTP_ENVELOPE_FROM
+    if _looks_like_email(SMTP_FROM):
+        _, addr = parseaddr(SMTP_FROM)
+        if _looks_like_email(addr):
+            return addr
+    return SMTP_USER
 
-def brand_wrap(inner: str) -> str:
-    return f"""\
-<!doctype html>
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="x-apple-disable-message-reformatting">
-    <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no">
-    <title>Consulta</title>
-  </head>
-  <body style="margin:0;background:#f4f6fb;">
-    <table role="presentation" width="100%" bgcolor="#f4f6fb" cellpadding="0" cellspacing="0" style="background:#f4f6fb;">
-      <tr>
-        <td align="center" style="padding:24px 12px;">
-          <table role="presentation" width="640" cellpadding="0" cellspacing="0" style="width:640px;max-width:640px;">
-            <tr>
-              <td align="left" style="padding:18px 20px;background:#0b1220;color:#e5e7eb;font:700 16px/1.2 'Segoe UI',Arial,sans-serif;">
-                CONSULTA TECHNOLOGIES
-                <div style="margin-top:4px;font:400 12px/1.3 'Segoe UI',Arial,sans-serif;color:#94a3b8;">
-                  Automation · Digitalization · Industrial Intelligence
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td style="background:#ffffff;border:1px solid #e6e8ee;border-top:none;padding:0;">
-                {inner}
-              </td>
-            </tr>
-            <tr>
-              <td align="center" style="padding:14px 12px;color:#6b7280;font:400 12px 'Segoe UI',Arial,sans-serif;">
-                Auto-generated by consulta.in
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>"""
+def _ssl_ctx() -> ssl.SSLContext:
+    ctx = ssl.create_default_context()
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+    return ctx
 
-def contact_html(c: dict) -> str:
-    name     = html.escape(str(c.get("name") or ""))
-    email    = html.escape(str(c.get("email") or ""))
-    phone    = html.escape(str(c.get("phone") or ""))
-    company  = html.escape(str(c.get("company") or "-"))
-    industry = html.escape(str(c.get("industry") or "-"))
-    message  = html.escape(str(c.get("message") or "")).replace("\n", "<br/>")
+def _build_plain_msg(*, to_addr: str, subject: str, body_text: str, reply_to: Optional[str]) -> EmailMessage:
+    msg = EmailMessage()
+    msg["Subject"] = _ascii_only(subject or "[Consulta]")
+    msg["From"] = SMTP_FROM if SMTP_FROM else SMTP_USER     # display name OK
+    msg["To"] = to_addr
+    msg["Date"] = formatdate(localtime=True)
+    msg["Message-ID"] = make_msgid(domain=MESSAGE_ID_DOMAIN)
+    if reply_to and _looks_like_email(reply_to):
+        msg["Reply-To"] = reply_to
+    msg.set_content((body_text or " ").strip() or " ")
+    return msg
 
-    mailto = f"mailto:{email}?subject=Re:%20Consulta%20enquiry" if email else "#"
-    telto  = f"tel:{phone}" if phone else "#"
+# ========= blocking core (used via to_thread) =========
+def _connect_and_login_blocking(port: int, timeout: float):
+    """Return (server, used_port, tls_mode)."""
+    if port == 465:
+        server = smtplib.SMTP_SSL(
+            host=SMTP_HOST, port=465, local_hostname=MAIL_EHLO_NAME,
+            context=_ssl_ctx(), timeout=timeout
+        )
+        tls_mode = "ssl/tls"
+        server.ehlo(MAIL_EHLO_NAME)
+    else:  # 587 (or 25): STARTTLS
+        server = smtplib.SMTP(
+            host=SMTP_HOST, port=port, local_hostname=MAIL_EHLO_NAME, timeout=timeout
+        )
+        server.ehlo(MAIL_EHLO_NAME)
+        server.starttls(context=_ssl_ctx())
+        server.ehlo(MAIL_EHLO_NAME)
+        tls_mode = "starttls"
 
-    inner = f"""\
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-      <tr>
-        <td style="padding:22px 22px 8px 22px;">
-          <div style="font:700 22px/1.3 'Segoe UI',Arial,sans-serif;color:#0f172a;margin:0;">New Website Enquiry</div>
-          <div style="font:400 13px 'Segoe UI',Arial,sans-serif;color:#6b7280;margin-top:4px;">Source: Website · Auto-generated</div>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:8px 22px 22px 22px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font:400 14px 'Segoe UI',Arial,sans-serif;color:#111827;">
-            <tr><td width="140" style="padding:10px 8px;color:#6b7280;">Name</td><td style="padding:10px 8px;border-bottom:1px solid #eef0f5;">{name}</td></tr>
-            <tr><td width="140" style="padding:10px 8px;color:#6b7280;">Email</td><td style="padding:10px 8px;border-bottom:1px solid #eef0f5;">{('<a href="'+mailto+'" style="color:#0ea5e9;text-decoration:none;">'+email+'</a>') if email else '-'}</td></tr>
-            <tr><td width="140" style="padding:10px 8px;color:#6b7280;">Phone</td><td style="padding:10px 8px;border-bottom:1px solid #eef0f5;">{('<a href="'+telto+'" style="color:#0ea5e9;text-decoration:none;">'+phone+'</a>') if phone else '-'}</td></tr>
-            <tr><td width="140" style="padding:10px 8px;color:#6b7280;">Company</td><td style="padding:10px 8px;border-bottom:1px solid #eef0f5;">{company}</td></tr>
-            <tr><td width="140" style="padding:10px 8px;color:#6b7280;">Industry</td><td style="padding:10px 8px;border-bottom:1px solid #eef0f5;">{industry}</td></tr>
-            <tr>
-              <td width="140" valign="top" style="padding:10px 8px;color:#6b7280;">Message</td>
-              <td style="padding:10px 8px;">
-                <div style="background:#f8fafc;border:1px solid #eef0f5;border-radius:6px;padding:12px;line-height:1.5;color:#111827;">
-                  {message or '<span style="color:#9ca3af">—</span>'}
-                </div>
-              </td>
-            </tr>
-          </table>
-          <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:16px;">
-            <tr><td>{('<a href="'+mailto+'" style="display:inline-block;background:#0ea5e9;color:#ffffff;font:600 14px \'Segoe UI\',Arial,sans-serif;padding:10px 14px;border-radius:6px;text-decoration:none;">Reply to Enquirer</a>') if email else ''}</td></tr>
-          </table>
-        </td>
-      </tr>
-    </table>"""
-    return brand_wrap(inner)
+    if SMTP_USER and SMTP_PASS:
+        server.login(SMTP_USER, SMTP_PASS)  # APP PASSWORD recommended
+    return server, port, tls_mode
 
-def contact_text(c: dict) -> str:
-    lines = [
-        "New Website Enquiry",
-        f"Name: {c.get('name') or ''}",
-        f"Email: {c.get('email') or ''}",
-        f"Phone: {c.get('phone') or ''}",
-        f"Company: {c.get('company') or '-'}",
-        f"Industry: {c.get('industry') or '-'}",
-        "Message:",
-        (c.get('message') or "").strip(),
-        "",
-        "Source: Website · Auto-generated",
-    ]
-    return "\n".join(lines)
+def _send_plain_blocking(subject: str, recipients: Tuple[str, ...], body_text: str, reply_to: Optional[str]) -> Dict:
+    if not recipients:
+        return {"ok": False, "error": "No recipients"}
 
-def _safe_reply_to(value: str | None) -> str | None:
-    v = (value or "").strip()
-    if not v:
-        return None
-    _, addr = parseaddr(v)
-    if not addr or "@" not in addr:
-        return None
-    if any(ch in addr for ch in ("\r", "\n", " ")):
-        return None
-    local, _, domain = addr.rpartition("@")
-    if not local or "." not in domain:
-        return None
-    return addr
+    primary = SMTP_PORT
+    alternate = 587 if primary == 465 else 465
+    last_exc = None
+    overall_started = time.perf_counter()
 
-# ---- Send (per-recipient with staged fallbacks, ASCII subject + standard headers) ----
-async def send_email(
-    subject: str,
-    to: Iterable[str],
-    html: str,
-    text: Optional[str] = None,
-    cc: Iterable[str] | None = None,
-    bcc: Iterable[str] | None = None,
-    reply_to: Optional[str] = None,
-):
-    to_list  = _normalize(to)
-    cc_list  = _normalize(cc or ())
-    bcc_list = _normalize(bcc or ())
-    if not (to_list or cc_list or bcc_list):
-        return
-
-    log = logging.getLogger("mailer")
-    subj_ascii = _ascii_only(subject or "[Consulta] Notification")
-    primary_text = (text or " ").strip() or " "
-
-    def build_msg(to_addr: str, include_reply_to: bool = True, include_html: bool = True) -> EmailMessage:
-        m = EmailMessage()
-        m["Subject"] = subj_ascii
-        m["From"] = SMTP_FROM
-        m["To"] = to_addr
-        m["Date"] = formatdate(localtime=True)
-        m["Message-ID"] = make_msgid(domain=MESSAGE_ID_DOMAIN)
-        m["X-Mailer"] = "consulta-web/1"
-        if include_reply_to and reply_to:
-            m["Reply-To"] = " ".join(reply_to.splitlines())
-        m.set_content(primary_text)
-        if include_html:
-            m.add_alternative(html, subtype="html")
-        return m
-
-    recipients = list(to_list) + list(cc_list) + list(bcc_list)
-    failures = {}
-
-    for r in recipients:
-        log.info("SMTP send -> sender=%s TO=%s ReplyTo=%s", ENVELOPE_FROM, r, reply_to)
-        # Attempt 1: full (html + reply-to)
+    for port in (primary, alternate):
         try:
-            await aiosmtplib.send(
-                build_msg(r, include_reply_to=True, include_html=True),
-                hostname=SMTP_HOST,
-                port=SMTP_PORT,
-                username=SMTP_USER,
-                password=SMTP_PASS,
-                timeout=20,
-                recipients=[r],
-                sender=ENVELOPE_FROM,
-                **_tls_kwargs(SMTP_PORT),
-            )
-            continue
-        except SMTPDataError as e:
-            log.warning("DATA %s for %s; retrying text-only. %s", e.code, r, e.message)
-            # Attempt 2: text-only (keep Reply-To)
+            server, used_port, tls_mode = _connect_and_login_blocking(port, SMTP_TIMEOUT)
             try:
-                await aiosmtplib.send(
-                    build_msg(r, include_reply_to=True, include_html=False),
-                    hostname=SMTP_HOST,
-                    port=SMTP_PORT,
-                    username=SMTP_USER,
-                    password=SMTP_PASS,
-                    timeout=20,
-                    recipients=[r],
-                    sender=ENVELOPE_FROM,
-                    **_tls_kwargs(SMTP_PORT),
-                )
-                continue
-            except SMTPDataError as e2:
-                log.warning("DATA %s (again) for %s; retrying text-only, no Reply-To. %s", e2.code, r, e2.message)
-                # Attempt 3: text-only, no Reply-To
-                try:
-                    await aiosmtplib.send(
-                        build_msg(r, include_reply_to=False, include_html=False),
-                        hostname=SMTP_HOST,
-                        port=SMTP_PORT,
-                        username=SMTP_USER,
-                        password=SMTP_PASS,
-                        timeout=20,
-                        recipients=[r],
-                        sender=ENVELOPE_FROM,
-                        **_tls_kwargs(SMTP_PORT),
-                    )
-                    continue
-                except Exception as e3:
-                    failures[r] = repr(e3)
-        except SMTPRecipientsRefused as e:
-            failures[r] = f"RecipientsRefused: {e.recipients}"
+                env_from = _envelope_from()
+                results: Dict[str, str] = {}
+                details: Dict[str, Dict[str, float | str]] = {}
+                for rcpt in recipients:
+                    msg = _build_plain_msg(to_addr=rcpt, subject=subject, body_text=body_text, reply_to=reply_to)
+                    delay = 0.0
+                    started = time.perf_counter()
+                    for attempt in range(1, SMTP_RETRIES + 2):
+                        if delay:
+                            time.sleep(delay)
+                        try:
+                            server.send_message(msg, from_addr=env_from, to_addrs=[rcpt])
+                            results[rcpt] = "ok"
+                            details[rcpt] = {
+                                "msgid": str(msg.get("Message-ID", "")),
+                                "duration_ms": round((time.perf_counter() - started) * 1000),
+                            }
+                            break
+                        except smtplib.SMTPException as e:
+                            results[rcpt] = f"fail:{repr(e)}"
+                            # One-time fallback: if server rejects message at DATA with 550 and we used Reply-To,
+                            # retry once without Reply-To header (some providers have policies around it)
+                            if reply_to and isinstance(e, smtplib.SMTPDataError) and getattr(e, 'smtp_code', 0) == 550 and attempt == 1:
+                                try:
+                                    msg_no_rt = _build_plain_msg(to_addr=rcpt, subject=subject, body_text=body_text, reply_to=None)
+                                    server.send_message(msg_no_rt, from_addr=env_from, to_addrs=[rcpt])
+                                    results[rcpt] = "ok"
+                                    details[rcpt] = {
+                                        "msgid": str(msg_no_rt.get("Message-ID", "")),
+                                        "duration_ms": round((time.perf_counter() - started) * 1000),
+                                    }
+                                    break
+                                except Exception as _:
+                                    pass
+                            delay = max(SMTP_RETRY_BACKOFF_S, 0.2)
+                            continue
+
+                ok = any(v == "ok" for v in results.values())
+                partial = ok and any(v != "ok" for v in results.values())
+                return {
+                    "ok": ok,
+                    "partial": partial,
+                    "host": SMTP_HOST,
+                    "port": used_port,
+                    "tls": tls_mode,
+                    "results": results,
+                    "details": details,
+                    "total_latency_ms": round((time.perf_counter() - overall_started) * 1000),
+                }
+            finally:
+                with contextlib.suppress(Exception):
+                    server.quit()
         except Exception as e:
-            failures[r] = repr(e)
+            last_exc = e
+            continue
 
-    if failures and len(failures) == len(recipients):
-        raise RuntimeError(f"All recipients failed: {failures}")
-    if failures:
-        log.error("Partial mail delivery failures: %s", failures)
+    return {
+        "ok": False,
+        "host": SMTP_HOST,
+        "port": primary,
+        "tls": "ssl/tls" if primary == 465 else "starttls",
+        "error": repr(last_exc) if last_exc else "unknown error",
+        "total_latency_ms": round((time.perf_counter() - overall_started) * 1000),
+    }
 
-# ---- High-level helper for contact notifications ----
-async def send_contact_notification(payload: dict):
-    subject   = build_subject(payload)
-    html_body = contact_html(payload)
-    text_body = contact_text(payload)
-    reply_to  = _safe_reply_to(payload.get("email"))
-
-    tos = NOTIFY_TO or ([SMTP_USER] if SMTP_USER else [])
-    await send_email(
-        subject=subject,
-        to=tos,
-        cc=NOTIFY_CC,
-        bcc=NOTIFY_BCC,
-        html=html_body,
-        text=text_body,
-        reply_to=reply_to,
-    )
-
-# ---- Mailer health + test ----
-async def check_mailer(timeout: float = 10.0) -> dict:
-    tls_mode = "implicit_tls" if SMTP_PORT == 465 else ("starttls" if SMTP_PORT in (25, 587) else "plain")
+def _health_blocking(timeout: float) -> Dict:
     started = time.perf_counter()
-    client = aiosmtplib.SMTP(
-        hostname=SMTP_HOST,
-        port=SMTP_PORT,
-        username=SMTP_USER,
-        password=SMTP_PASS,
-        timeout=timeout,
-        **_tls_kwargs(SMTP_PORT),
-    )
+    primary = SMTP_PORT
+    alternate = 587 if primary == 465 else 465
     try:
-        await client.connect()
-        already_authed = False
+        server, used_port, tls_mode = _connect_and_login_blocking(primary, timeout)
+    except Exception:
         try:
-            if SMTP_USER and SMTP_PASS:
-                await client.login(SMTP_USER, SMTP_PASS)
-        except SMTPAuthenticationError as e:
-            msg = (str(e) or "").lower()
-            if getattr(e, "code", None) == 503 or "previously authenticated" in msg:
-                already_authed = True
-            else:
-                raise
-        code, resp = await client.noop()
+            server, used_port, tls_mode = _connect_and_login_blocking(alternate, timeout)
+        except Exception as e:
+            return {
+                "ok": False, "host": SMTP_HOST, "port": primary,
+                "tls": "ssl/tls" if primary == 465 else "starttls",
+                "auth": bool(SMTP_USER and SMTP_PASS), "error": repr(e),
+                "latency_ms": round((time.perf_counter() - started) * 1000),
+            }
+    try:
+        code, resp = server.noop()  # typically 250
         ok = 200 <= int(code) < 400
         return {
-            "ok": bool(ok),
-            "host": SMTP_HOST,
-            "port": SMTP_PORT,
-            "tls": tls_mode,
-            "auth": bool(SMTP_USER and SMTP_PASS),
-            "already_authed": already_authed,
-            "code": int(code),
+            "ok": bool(ok), "host": SMTP_HOST, "port": used_port, "tls": tls_mode,
+            "auth": bool(SMTP_USER and SMTP_PASS), "code": int(code),
             "response": resp.decode() if isinstance(resp, (bytes, bytearray)) else str(resp),
             "latency_ms": round((time.perf_counter() - started) * 1000),
         }
-    except Exception as e:
-        return {
-            "ok": False,
-            "host": SMTP_HOST,
-            "port": SMTP_PORT,
-            "tls": tls_mode,
-            "auth": bool(SMTP_USER and SMTP_PASS),
-            "error": repr(e),
-            "latency_ms": round((time.perf_counter() - started) * 1000),
-        }
     finally:
-        try:
-            await client.quit()
-        except Exception:
-            pass
+        with contextlib.suppress(Exception):
+            server.quit()
 
-async def send_test_email(to: Optional[Iterable[str]] = None, subject_prefix: str = "[Mailer Test] ") -> dict:
+# ========= async wrappers (FastAPI-friendly) =========
+async def send_email(
+    subject: str,
+    to: Iterable[str],
+    html: str,                   # ignored (keeping signature)
+    text: Optional[str] = None,  # used
+    reply_to: Optional[str] = None,
+    cc=None, bcc=None,           # ignored (kept for compatibility)
+) -> Dict:
+    # NO CC/BCC — kept in signature so routes don’t break
+    recipients = _normalize(to)
+    body = text or ""
+    rt = reply_to if _looks_like_email(reply_to) else None
+    result = await asyncio.to_thread(
+        _send_plain_blocking,
+        _ascii_only(subject or "[Consulta]"),
+        recipients,
+        body,
+        rt,
+    )
+    return result
+
+async def send_contact_notification(payload: dict) -> Dict:
+    lines = [
+        "New Website Enquiry",
+        f"Name: {payload.get('name') or ''}",
+        f"Email: {payload.get('email') or ''}",
+        f"Phone: {payload.get('phone') or ''}",
+        f"Company: {payload.get('company') or '-'}",
+        f"Industry: {payload.get('industry') or '-'}",
+        "Message:",
+        (payload.get('message') or "").strip(),
+        "",
+        "Source: Website · Auto-generated",
+    ]
+    subject = _ascii_only("[Consulta] New website enquiry")
+    body = "\n".join(lines)
+    # Avoid Reply-To to reduce 550/DMARC rejections; include sender email only in body
+    reply_to = None
+
+    tos = NOTIFY_TO or ([SMTP_USER] if SMTP_USER else [])
+    try:
+        res = await send_email(subject=subject, to=tos, html="", text=body, reply_to=reply_to)
+        if not isinstance(res, dict):
+            return {"ok": False, "error": "unexpected_response", "response": str(res)}
+        return res
+    except Exception as e:
+        return {"ok": False, "error": repr(e)}
+
+async def check_mailer(timeout: float = 10.0) -> Dict:
+    global _last_health_ts
+    # belt & suspenders in case of weird reload order
+    if "_last_health_ts" not in globals():
+        _last_health_ts = None
+
+    now = time.perf_counter()
+    if (_last_health_ts is not None) and (now - _last_health_ts) < MAIL_HEALTH_MIN_INTERVAL_S:
+        return {"ok": True, "skipped": True, "reason": "rate_limited"}
+
+    try:
+        res = await asyncio.to_thread(_health_blocking, timeout)
+        return res
+    finally:
+        _last_health_ts = time.perf_counter()
+
+
+async def send_test_email(to: Optional[Iterable[str]] = None, subject_prefix: str = "[Mailer Test] ") -> Dict:
     recipients = _normalize(to or (NOTIFY_TO or ([SMTP_USER] if SMTP_USER else [])))
     if not recipients:
         return {"ok": False, "error": "No recipients configured"}
     subj = _ascii_only(f"{subject_prefix}{SMTP_HOST}:{SMTP_PORT}")
-    html_body = "<p>Consulta mailer test: this is a diagnostic message.</p>"
-    await send_email(subject=subj, to=recipients, html=html_body, text="Test")
-    return await check_mailer()
+    try:
+        send_res = await send_email(subject=subj, to=recipients, html="", text="Consulta mailer plain-text test.")
+    except Exception as e:
+        send_res = {"ok": False, "error": repr(e)}
+    # Don’t fail the endpoint just because health flaps
+    try:
+        health = await check_mailer()
+    except Exception as e:
+        health = {"ok": False, "error": repr(e)}
+    ok = bool(isinstance(send_res, dict) and send_res.get("ok"))
+    return {"send": send_res, "health": health, "ok": ok}

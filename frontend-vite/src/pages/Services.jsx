@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Search, ExternalLink, LayoutGrid, List } from "lucide-react";
 import Footer from "../components/Footer";
 import { productsAPI } from "../services/api";
-import useReveal from "../hooks/useReveal"; // <-- adjust path if needed
+import useReveal from "../hooks/useReveal";
 
 /* --------------------------- UI bits --------------------------- */
 
@@ -22,97 +22,125 @@ const Chip = ({ active, children, onClick }) => (
   </button>
 );
 
+const FALLBACK_LOGO =
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="100%" height="100%" rx="12" fill="%23f3f4f6"/><g fill="%239ca3af" font-family="Arial,Helvetica,sans-serif" font-size="12"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle">Logo</text></g></svg>';
+
 const ProductCard = ({ p, index, compact = false, featured = false }) => {
-  const { ref, show } = useReveal(0.15); // your hook returns {ref, show}
+  const { ref, show } = useReveal(0.15);
+
   return (
     <article
       ref={ref}
       className={[
-        "group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-xl",
-        "transition-all duration-500 will-change-transform",
+        // frame
+        "group relative rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-lg",
+        "transition-all duration-300 will-change-transform hover:-translate-y-0.5",
         show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6",
-        featured && !compact ? "md:col-span-2 p-8" : "",
-        compact ? "flex gap-4 items-start" : "",
+        // equal heights + inner layout
+        "h-full flex flex-col p-6",
       ].join(" ")}
       style={{ transitionDelay: `${Math.min(index * 60, 240)}ms` }}
     >
-      {/* Logo */}
-      {p.logo ? (
-        <img
-          src={p.logo}
-          alt=""
-          className={[
-            "rounded-xl object-contain bg-gray-50 border border-gray-200",
-            compact ? "h-16 w-16 shrink-0" : "h-16 w-16",
-          ].join(" ")}
-          loading="lazy"
-        />
-      ) : (
-        <div className="h-16 w-16 rounded-xl bg-gray-100 border border-gray-200 grid place-items-center text-xs text-gray-500">
-          Logo
-        </div>
-      )}
+      {/* subtle top accent */}
+      <span className="absolute left-0 right-0 top-0 h-0.5 rounded-t-2xl bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 opacity-0 group-hover:opacity-100 transition-opacity" />
 
-      {/* Content */}
-      <div className={compact ? "min-w-0 flex-1" : ""}>
-        <header className={compact ? "" : "mt-2"}>
+      {/* header: logo + title/tagline */}
+      <div className="flex items-start gap-4">
+        <div className="size-16 rounded-xl border border-gray-200 bg-gray-50 grid place-items-center shrink-0 overflow-hidden">
+          <img
+            src={p.logo || FALLBACK_LOGO}
+            onError={(e) => (e.currentTarget.src = FALLBACK_LOGO)}
+            alt=""
+            className="h-12 w-12 object-contain"
+            loading="lazy"
+          />
+        </div>
+
+        <div className="min-w-0">
           <h3
             className={[
-              "font-semibold text-gray-900 tracking-tight line-clamp-1 group-hover:opacity-90",
-              featured && !compact ? "text-2xl" : "text-lg",
+              "font-semibold text-gray-900 tracking-tight line-clamp-1",
+              featured ? "text-xl" : "text-lg",
             ].join(" ")}
+            title={p.title}
           >
             {p.title}
           </h3>
           {p.tagline && (
-            <p className={["text-gray-600", featured && !compact ? "mt-1" : "", "text-sm line-clamp-2"].join(" ")}>
+            <p className="mt-0.5 text-sm text-gray-600 line-clamp-2" title={p.tagline}>
               {p.tagline}
             </p>
           )}
-        </header>
+        </div>
+      </div>
 
-        {p.description && !compact && (
-          <p className={["text-sm leading-6 text-gray-700", featured ? "mt-3 line-clamp-3" : "mt-3 line-clamp-4"].join(" ")}>
+      {/* body */}
+      <div className="mt-3 flex-1 min-h-[1rem]">
+        {!compact && p.description && (
+          <p
+            className={[
+              "text-sm leading-6 text-gray-700",
+              featured ? "line-clamp-3" : "line-clamp-4",
+            ].join(" ")}
+          >
             {p.description}
           </p>
         )}
 
         {Array.isArray(p.features) && p.features.length > 0 && (
-          <ul className={compact ? "mt-2 flex flex-wrap gap-2" : "mt-4 space-y-1.5 text-sm text-gray-700 list-disc pl-5"}>
-            {p.features.slice(0, compact ? 3 : featured ? 6 : 4).map((f, i) =>
-              compact ? (
-                <li key={i} className="text-xs text-gray-700 bg-gray-100 border border-gray-200 rounded-full px-2.5 py-0.5">
-                  {f}
-                </li>
-              ) : (
-                <li key={i}>{f}</li>
-              )
-            )}
-          </ul>
-        )}
-
-        <div className="mt-5 flex flex-wrap items-center gap-3">
-          <Link
-            to={`/products/${p.slug}`}
-            className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium hover:bg-gray-50 active:bg-gray-100 transition-colors"
-          >
-            Learn more
-          </Link>
-          {p.website && (
-            <a
-              href={p.website}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 text-sm text-gray-900 underline-offset-2 hover:underline"
+          <>
+            {!compact && <div className="my-4 h-px bg-gray-100" />}
+            <ul
+              className={
+                compact
+                  ? "mt-2 flex flex-wrap gap-2"
+                  : "mt-3 space-y-2 text-sm text-gray-700 list-disc pl-5"
+              }
             >
-              Website <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-          )}
-        </div>
+              {p.features
+                .slice(0, compact ? 3 : featured ? 6 : 4)
+                .map((f, i) =>
+                  compact ? (
+                    <li
+                      key={i}
+                      className="text-xs text-gray-700 bg-gray-100 border border-gray-200 rounded-full px-2.5 py-0.5"
+                    >
+                      {f}
+                    </li>
+                  ) : (
+                    <li key={i} className="leading-6">
+                      {f}
+                    </li>
+                  )
+                )}
+            </ul>
+          </>
+        )}
+      </div>
+
+      {/* footer */}
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <Link
+          to={`/products/${p.slug}`}
+          className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium hover:bg-gray-50 active:bg-gray-100 transition-colors"
+        >
+          Learn more
+        </Link>
+        {p.website && (
+          <a
+            href={p.website}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-sm text-gray-900 underline-offset-2 hover:underline"
+          >
+            Website <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+        )}
       </div>
     </article>
   );
 };
+
 
 /* ------------------------------ Page ------------------------------ */
 
@@ -122,11 +150,10 @@ export default function Services() {
   const [loading, setLoading] = useState(true);
   const [layout, setLayout] = useState("detailed"); // "detailed" | "compact"
   const [cat, setCat] = useState("All");
-
   const [entered, setEntered] = useState(false);
+
   useEffect(() => setEntered(true), []);
 
-  // fetch
   useEffect(() => {
     window.scrollTo(0, 0);
     (async () => {
@@ -139,14 +166,12 @@ export default function Services() {
     })();
   }, []);
 
-  // categories
   const categories = useMemo(() => {
     const all = new Set();
     items.forEach((p) => (p.categories || []).forEach((c) => all.add(String(c).trim())));
     return ["All", ...Array.from(all)];
   }, [items]);
 
-  // filter
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return items.filter((p) => {
@@ -160,13 +185,12 @@ export default function Services() {
     });
   }, [items, query, cat]);
 
-  // reveal for chips/grid using your hook
+  // Keep the reveal effects for chips + grid
   const chipsReveal = useReveal(0.1);
   const gridReveal = useReveal(0.15);
 
-  // feature the first card only on All + no search + detailed layout
-  const showFeatured =
-    layout === "detailed" && !query.trim() && cat === "All" && filtered.length > 0;
+  // If you still want a “featured” look, we only bump typography/padding (no col-span)
+  const showFeatured = layout === "detailed" && !query.trim() && cat === "All" && filtered.length > 0;
 
   return (
     <div className="min-h-screen bg-white">
@@ -181,9 +205,13 @@ export default function Services() {
             Back to Home
           </Link>
 
-          <div className={`transition-all duration-1000 ease-out ${entered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+          <div
+            className={`transition-all duration-1000 ease-out ${
+              entered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+            }`}
+          >
             <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight">
-            Our Professional Services
+              Our Professional Services
             </h1>
             <p className="mt-3 text-lg text-gray-600 max-w-3xl">
               Superior tools meticulously assembled into dependable frameworks
@@ -191,7 +219,11 @@ export default function Services() {
           </div>
 
           {/* search + layout toggle */}
-          <div className={`mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between transition-all duration-700 ${entered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
+          <div
+            className={`mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between transition-all duration-700 ${
+              entered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+            }`}
+          >
             <div className="relative max-w-xl w-full">
               <Search className="pointer-events-none absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               <input
@@ -228,7 +260,7 @@ export default function Services() {
             </div>
           </div>
 
-          {/* sticky chips row (tap active → All) */}
+          {/* sticky chips row */}
           <div
             ref={chipsReveal.ref}
             className={[
@@ -259,7 +291,7 @@ export default function Services() {
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {loading ? (
-            <div className="grid gap-6 sm:gap-8 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+            <div className="grid gap-6 sm:gap-8 [grid-template-columns:repeat(auto-fill,minmax(280px,1fr))]">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="animate-pulse rounded-2xl border border-gray-200 bg-white p-6">
                   <div className="flex items-start gap-3">
@@ -277,7 +309,12 @@ export default function Services() {
             <div
               ref={gridReveal.ref}
               className={[
-                "rounded-2xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-600",
+                "grid gap-6 sm:gap-8 items-stretch",
+                layout === "compact"
+                  ? "[grid-template-columns:repeat(auto-fill,minmax(260px,1fr))]"
+                  : "[grid-template-columns:repeat(auto-fill,minmax(300px,1fr))]",
+                // this line encourages equal heights across rows
+                "auto-rows-fr",
                 "transition-all duration-700",
                 gridReveal.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6",
               ].join(" ")}
@@ -288,20 +325,21 @@ export default function Services() {
             <div
               ref={gridReveal.ref}
               className={[
+                "grid gap-6 sm:gap-8 items-stretch",
                 layout === "compact"
-                  ? "grid gap-4 sm:gap-6 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]"
-                  : "grid gap-6 sm:gap-8 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]",
+                  ? "[grid-template-columns:repeat(auto-fill,minmax(260px,1fr))]"
+                  : "[grid-template-columns:repeat(auto-fill,minmax(280px,1fr))]",
                 "transition-all duration-700",
                 gridReveal.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6",
               ].join(" ")}
             >
               {filtered.map((p, i) => (
                 <ProductCard
-                  key={p.id || p.slug || i}
+                  key={p._id?.$oid || p.id || p.slug || i}
                   p={p}
                   index={i}
                   compact={layout === "compact"}
-                  featured={showFeatured && i === 0}
+                  featured={showFeatured && i === 0} // only typography/padding, no col-span
                 />
               ))}
             </div>

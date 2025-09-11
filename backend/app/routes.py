@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Header , Query  , Body
+import logging
 from fastapi.responses import JSONResponse
 from typing import List, Optional
 from datetime import datetime
@@ -54,6 +55,19 @@ async def mailer_test(to: list[str] = Body(default=[])):
     return await send_test_email(to=to or None)
 # ---------------- Contacts ----------------
 
+async def _send_contact_and_log(payload: dict):
+    logger = logging.getLogger("mailer")
+    try:
+        res = await send_contact_notification(payload)
+        # Log detailed results to help diagnose env/config issues
+        if isinstance(res, dict) and res.get("ok"):
+            logger.info("contact_email_sent: %s", res)
+        else:
+            logger.error("contact_email_send_failed: %s", res)
+    except Exception as e:
+        logger.exception("contact_email_exception: %s", repr(e))
+
+
 @router.post("/contacts", response_model=Contact)
 async def create_contact(contact_data: ContactCreate, bt: BackgroundTasks):
     c = Contact(**contact_data.model_dump())
@@ -71,7 +85,8 @@ async def create_contact(contact_data: ContactCreate, bt: BackgroundTasks):
         "industry": c.industry,
         "message": c.message,
     }
-    bt.add_task(send_contact_notification, payload)
+    # Use a wrapper that logs success/failure of the background mail
+    bt.add_task(_send_contact_and_log, payload)
 
     return c
 

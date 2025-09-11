@@ -361,7 +361,7 @@ const About = () => {
               <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-lg bg-black">
                 <div className="aspect-[16/9] w-full">
                   <video
-                    src="/media/about.mp4"
+                    src="/media/Automation.mp4"
                     className="w-full h-full object-cover"
                     controls
                     playsInline

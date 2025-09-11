@@ -14,6 +14,8 @@ function resolveBackendUrl() {
       console.warn("VITE_BACKEND_URL not set; using fallback http://localhost:8000");
       return "http://localhost:8000";
     }
+    // In production, default to same-origin backend (behind reverse proxy)
+    return window.location.origin.replace(/\/$/, "");
   }
 
   return "http://localhost:8000";

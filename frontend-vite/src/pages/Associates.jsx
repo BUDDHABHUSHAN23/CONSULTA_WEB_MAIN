@@ -340,8 +340,8 @@ const Associates = () => {
                       </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="mt-5 flex items-center gap-3">
+                    {/* Actions   we dont want this thats why we are hiding this  */}
+                    {/* <div className="mt-5 flex items-center gap-3">
                       <a
                         href={a.website}
                         target="_blank"
@@ -361,7 +361,7 @@ const Associates = () => {
                       >
                         Details
                       </button>
-                    </div>
+                    </div> */}
                   </div>
                 </article>
               ))}
