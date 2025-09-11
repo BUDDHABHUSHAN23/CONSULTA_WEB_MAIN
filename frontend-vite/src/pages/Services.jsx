@@ -116,7 +116,7 @@ const ProductCard = ({ p, index, compact = false, featured = false }) => {
 
 /* ------------------------------ Page ------------------------------ */
 
-export default function Products() {
+export default function Services() {
   const [items, setItems] = useState([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -183,10 +183,10 @@ export default function Products() {
 
           <div className={`transition-all duration-1000 ease-out ${entered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
             <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight">
-              Products we use
+            Our Professional Services
             </h1>
             <p className="mt-3 text-lg text-gray-600 max-w-3xl">
-              Best-in-class tools we integrate into dependable solutions.
+              Superior tools meticulously assembled into dependable frameworks
             </p>
           </div>
 

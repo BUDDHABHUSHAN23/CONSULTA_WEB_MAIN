@@ -184,13 +184,13 @@ export default function IndustryDetail() {
 
             {/* Right: static visual (no gradient/stripes) */}
             <div className="relative h-64 sm:h-80 lg:h-[28rem] reveal-y">
-              <div className="absolute inset-0 rounded-3xl bg-white ring-1 ring-gray-200 shadow-sm" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="rounded-2xl bg-white px-5 py-3 text-sm font-medium text-gray-700 ring-1 ring-gray-200">
-                  Content under construction
+                <div className="absolute inset-0 rounded-3xl bg-white ring-1 ring-gray-200 shadow-sm" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="shine shine-run rounded-2xl bg-white px-5 py-3 text-sm font-medium text-gray-700 ring-1 ring-gray-200">
+                    Content under construction
+                  </div>
                 </div>
               </div>
-            </div>
           </div>
 
           {/* What to expect */}

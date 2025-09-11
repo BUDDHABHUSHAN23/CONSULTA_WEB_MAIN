@@ -380,3 +380,12 @@ img { image-rendering: -webkit-optimize-contrast; }
 }
 
 
+/* Run the shine sweep without hover */
+.shine-run::after { animation: card-shine 1.2s var(--ease-emph) forwards; }
+
+/* Optional: loop it forever (swap classes if you want this) */
+.shine-loop::after { animation: card-shine 1.4s var(--ease-emph) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .shine-run::after, .shine-loop::after { animation: none; }
+}
