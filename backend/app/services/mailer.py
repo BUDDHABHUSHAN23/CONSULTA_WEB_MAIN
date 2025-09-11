@@ -1,17 +1,12 @@
 # app/services/mailer.py
 from __future__ import annotations
-import os, time, html
+import os, time, html, logging
 from typing import Iterable, Optional, Tuple
 from email.message import EmailMessage
+from email.utils import parseaddr, formatdate, make_msgid
 
 import aiosmtplib
-from aiosmtplib.errors import SMTPAuthenticationError
-from email.utils import parseaddr
-# for checking the issue 
-import logging
-
-SMTP_ENVELOPE_FROM = os.getenv("SMTP_ENVELOPE_FROM") or SMTP_USER
-
+from aiosmtplib.errors import SMTPAuthenticationError, SMTPDataError, SMTPRecipientsRefused
 
 # --- Env ---
 SMTP_HOST = os.getenv("SMTP_HOST", "localhost")
@@ -19,15 +14,19 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "25"))
 SMTP_USER = os.getenv("SMTP_USER") or None
 SMTP_PASS = os.getenv("SMTP_PASS") or None
 SMTP_FROM = os.getenv("SMTP_FROM", "Consulta <no-reply@consulta.in>")
+SMTP_ENVELOPE_FROM = os.getenv("SMTP_ENVELOPE_FROM") or SMTP_USER
+MESSAGE_ID_DOMAIN = os.getenv("MAIL_MESSAGE_ID_DOMAIN", "consulta.in")
 
-# Comma-separated addresses (optional)
-NOTIFY_TO  = [e.strip() for e in os.getenv("NOTIFY_TO",  "").split(",") if e.strip()]
-NOTIFY_CC  = [e.strip() for e in os.getenv("NOTIFY_CC",  "").split(",") if e.strip()]
-NOTIFY_BCC = [e.strip() for e in os.getenv("NOTIFY_BCC", "").split(",") if e.strip()]
+# Recipients (comma-separated)
+def _split_env(name: str) -> tuple[str, ...]:
+    return tuple(e.strip() for e in os.getenv(name, "").split(",") if e.strip())
+
+NOTIFY_TO  = _split_env("NOTIFY_TO")
+NOTIFY_CC  = _split_env("NOTIFY_CC")
+NOTIFY_BCC = _split_env("NOTIFY_BCC")
 
 # --- TLS selection ---
 def _tls_kwargs(port: int) -> dict:
-    # 465 => implicit TLS; 25/587 => STARTTLS; others => plain
     if port == 465:
         return {"use_tls": True}
     if port in (25, 587):
@@ -46,14 +45,30 @@ def _normalize(addrs: Iterable[str]) -> Tuple[str, ...]:
             seen.add(k)
     return tuple(out)
 
-# ---- Subject + HTML (brand-safe, Outlook-friendly) ----
+def _looks_like_email(s: str | None) -> bool:
+    if not s or "@" not in s or any(ch in s for ch in ("\r", "\n", " ")):
+        return False
+    local, _, domain = s.rpartition("@")
+    return bool(local and "." in domain)
+
+# pick a safe envelope sender
+ENVELOPE_FROM = SMTP_ENVELOPE_FROM if _looks_like_email(SMTP_ENVELOPE_FROM) else SMTP_USER
+
+# ---------- Subject + bodies ----------
+def _ascii_only(s: str) -> str:
+    # Drop non-ASCII to avoid SMTPUTF8/Data policy issues on some servers
+    return (s or "").encode("ascii", "ignore").decode("ascii")
+
 def build_subject(c: dict) -> str:
     name = (c.get("name") or "").strip()
     company = (c.get("company") or "").strip()
-    parts = ["[Consulta] New website enquiry"]
-    if name: parts.append(f"— {name}")
-    if company: parts.append(f"({company})")
-    return " ".join(parts)
+    # ASCII-only, use plain hyphen instead of em dash
+    base = "[Consulta] New website enquiry"
+    if name:
+        base += f" - {name}"
+    if company:
+        base += f" ({company})"
+    return _ascii_only(base)
 
 def brand_wrap(inner: str) -> str:
     return f"""\
@@ -96,7 +111,6 @@ def brand_wrap(inner: str) -> str:
 </html>"""
 
 def contact_html(c: dict) -> str:
-    # Escape user inputs
     name     = html.escape(str(c.get("name") or ""))
     email    = html.escape(str(c.get("email") or ""))
     phone    = html.escape(str(c.get("phone") or ""))
@@ -155,7 +169,21 @@ def contact_text(c: dict) -> str:
     ]
     return "\n".join(lines)
 
-# ---- Send (with CC/BCC/Reply-To) ----
+def _safe_reply_to(value: str | None) -> str | None:
+    v = (value or "").strip()
+    if not v:
+        return None
+    _, addr = parseaddr(v)
+    if not addr or "@" not in addr:
+        return None
+    if any(ch in addr for ch in ("\r", "\n", " ")):
+        return None
+    local, _, domain = addr.rpartition("@")
+    if not local or "." not in domain:
+        return None
+    return addr
+
+# ---- Send (per-recipient with staged fallbacks, ASCII subject + standard headers) ----
 async def send_email(
     subject: str,
     to: Iterable[str],
@@ -165,70 +193,114 @@ async def send_email(
     bcc: Iterable[str] | None = None,
     reply_to: Optional[str] = None,
 ):
-    """
-    Sends an email via SMTP.
-    - 465 -> implicit TLS; 25/587 -> STARTTLS.
-    - Accepts CC/BCC and Reply-To.
-    """
     to_list  = _normalize(to)
     cc_list  = _normalize(cc or ())
     bcc_list = _normalize(bcc or ())
     if not (to_list or cc_list or bcc_list):
         return
 
-    msg = EmailMessage()
-    msg["Subject"] = " ".join((subject or "").splitlines()) or " "
-    msg["From"] = SMTP_FROM
-    if to_list:  msg["To"] = ", ".join(to_list)
-    if cc_list:  msg["Cc"] = ", ".join(cc_list)
-    if reply_to: msg["Reply-To"] = " ".join(reply_to.splitlines())
+    log = logging.getLogger("mailer")
+    subj_ascii = _ascii_only(subject or "[Consulta] Notification")
+    primary_text = (text or " ").strip() or " "
 
-    msg.set_content(text or " ")
-    msg.add_alternative(html, subtype="html")
+    def build_msg(to_addr: str, include_reply_to: bool = True, include_html: bool = True) -> EmailMessage:
+        m = EmailMessage()
+        m["Subject"] = subj_ascii
+        m["From"] = SMTP_FROM
+        m["To"] = to_addr
+        m["Date"] = formatdate(localtime=True)
+        m["Message-ID"] = make_msgid(domain=MESSAGE_ID_DOMAIN)
+        m["X-Mailer"] = "consulta-web/1"
+        if include_reply_to and reply_to:
+            m["Reply-To"] = " ".join(reply_to.splitlines())
+        m.set_content(primary_text)
+        if include_html:
+            m.add_alternative(html, subtype="html")
+        return m
 
     recipients = list(to_list) + list(cc_list) + list(bcc_list)
+    failures = {}
 
-    log = logging.getLogger("mailer")
+    for r in recipients:
+        log.info("SMTP send -> sender=%s TO=%s ReplyTo=%s", ENVELOPE_FROM, r, reply_to)
+        # Attempt 1: full (html + reply-to)
+        try:
+            await aiosmtplib.send(
+                build_msg(r, include_reply_to=True, include_html=True),
+                hostname=SMTP_HOST,
+                port=SMTP_PORT,
+                username=SMTP_USER,
+                password=SMTP_PASS,
+                timeout=20,
+                recipients=[r],
+                sender=ENVELOPE_FROM,
+                **_tls_kwargs(SMTP_PORT),
+            )
+            continue
+        except SMTPDataError as e:
+            log.warning("DATA %s for %s; retrying text-only. %s", e.code, r, e.message)
+            # Attempt 2: text-only (keep Reply-To)
+            try:
+                await aiosmtplib.send(
+                    build_msg(r, include_reply_to=True, include_html=False),
+                    hostname=SMTP_HOST,
+                    port=SMTP_PORT,
+                    username=SMTP_USER,
+                    password=SMTP_PASS,
+                    timeout=20,
+                    recipients=[r],
+                    sender=ENVELOPE_FROM,
+                    **_tls_kwargs(SMTP_PORT),
+                )
+                continue
+            except SMTPDataError as e2:
+                log.warning("DATA %s (again) for %s; retrying text-only, no Reply-To. %s", e2.code, r, e2.message)
+                # Attempt 3: text-only, no Reply-To
+                try:
+                    await aiosmtplib.send(
+                        build_msg(r, include_reply_to=False, include_html=False),
+                        hostname=SMTP_HOST,
+                        port=SMTP_PORT,
+                        username=SMTP_USER,
+                        password=SMTP_PASS,
+                        timeout=20,
+                        recipients=[r],
+                        sender=ENVELOPE_FROM,
+                        **_tls_kwargs(SMTP_PORT),
+                    )
+                    continue
+                except Exception as e3:
+                    failures[r] = repr(e3)
+        except SMTPRecipientsRefused as e:
+            failures[r] = f"RecipientsRefused: {e.recipients}"
+        except Exception as e:
+            failures[r] = repr(e)
 
-    # just before aiosmtplib.send(...)
-    log.info("SMTP send -> sender=%s TO=%s CC=%s BCC=%s ReplyTo=%s",
-         SMTP_ENVELOPE_FROM, to_list, cc_list, bcc_list, reply_to)
-
-    await aiosmtplib.send(
-        msg,
-        hostname=SMTP_HOST,
-        port=SMTP_PORT,
-        username=SMTP_USER,
-        password=SMTP_PASS,
-        timeout=20,
-        recipients=recipients,
-        sender=SMTP_ENVELOPE_FROM,   # <- this is the fix
-        **_tls_kwargs(SMTP_PORT),
-    )
-
+    if failures and len(failures) == len(recipients):
+        raise RuntimeError(f"All recipients failed: {failures}")
+    if failures:
+        log.error("Partial mail delivery failures: %s", failures)
 
 # ---- High-level helper for contact notifications ----
-# async def send_contact_notification(payload: dict):
-#     subject  = build_subject(payload)
-#     html_body = contact_html(payload)
-#     text_body = contact_text(payload)
-#     reply_to = (payload.get("email") or "").strip() or None
+async def send_contact_notification(payload: dict):
+    subject   = build_subject(payload)
+    html_body = contact_html(payload)
+    text_body = contact_text(payload)
+    reply_to  = _safe_reply_to(payload.get("email"))
 
-#     # if NOTIFY_TO is empty, fall back to SMTP_USER so nothing is lost
-#     tos = NOTIFY_TO or ([SMTP_USER] if SMTP_USER else [])
-#     await send_email(
-#         subject=subject,
-#         to=tos,
-#         cc=NOTIFY_CC,
-#         bcc=NOTIFY_BCC,
-#         html=html_body,
-#         text=text_body,
-#         reply_to=reply_to,
-#     )
+    tos = NOTIFY_TO or ([SMTP_USER] if SMTP_USER else [])
+    await send_email(
+        subject=subject,
+        to=tos,
+        cc=NOTIFY_CC,
+        bcc=NOTIFY_BCC,
+        html=html_body,
+        text=text_body,
+        reply_to=reply_to,
+    )
 
 # ---- Mailer health + test ----
 async def check_mailer(timeout: float = 10.0) -> dict:
-    """Connect, (optionally) login, NOOP. Treat 503 'previously authenticated' as healthy."""
     tls_mode = "implicit_tls" if SMTP_PORT == 465 else ("starttls" if SMTP_PORT in (25, 587) else "plain")
     started = time.perf_counter()
     client = aiosmtplib.SMTP(
@@ -281,50 +353,10 @@ async def check_mailer(timeout: float = 10.0) -> dict:
             pass
 
 async def send_test_email(to: Optional[Iterable[str]] = None, subject_prefix: str = "[Mailer Test] ") -> dict:
-    """Send a short test message to given recipients (or NOTIFY_TO/SMTP_USER fallback), then return live status."""
     recipients = _normalize(to or (NOTIFY_TO or ([SMTP_USER] if SMTP_USER else [])))
     if not recipients:
         return {"ok": False, "error": "No recipients configured"}
+    subj = _ascii_only(f"{subject_prefix}{SMTP_HOST}:{SMTP_PORT}")
     html_body = "<p>Consulta mailer test: this is a diagnostic message.</p>"
-    await send_email(
-        subject=f"{subject_prefix}{SMTP_HOST}:{SMTP_PORT}",
-        to=recipients,
-        html=html_body,
-        text="Test",
-    )
+    await send_email(subject=subj, to=recipients, html=html_body, text="Test")
     return await check_mailer()
-
-
-def _safe_reply_to(value: str | None) -> str | None:
-    v = (value or "").strip()
-    if not v:
-        return None
-    _, addr = parseaddr(v)
-    if not addr or "@" not in addr:
-        return None
-    if any(ch in addr for ch in ("\r", "\n", " ")):
-        return None
-    local, _, domain = addr.rpartition("@")
-    if not local or "." not in domain:
-        return None
-    return addr
-
-
-async def send_contact_notification(payload: dict):
-    subject   = build_subject(payload)
-    html_body = contact_html(payload)
-    text_body = contact_text(payload)
-    reply_to  = _safe_reply_to(payload.get("email"))  # <-- validate
-
-    tos = NOTIFY_TO or ([SMTP_USER] if SMTP_USER else [])
-    await send_email(
-        subject=subject,
-        to=tos,
-        cc=NOTIFY_CC,
-        bcc=NOTIFY_BCC,
-        html=html_body,
-        text=text_body,
-        reply_to=reply_to,    # will be None if junk, which is fine
-    )
-
-

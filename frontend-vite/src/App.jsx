@@ -14,8 +14,9 @@ import About from "./pages/About";
 import Careers from "./pages/Careers";
 import Blogs from "./pages/Blogs";
 import IndustryDetail from "./pages/IndustryDetail";
-import Products from "./pages/Products";
+import Products from "./pages/Services";
 import ProductDetail from "./pages/ProductDetail";
+// import Solutions from "./pages/Solutions";
 import { useNotifications } from "./components/ui/NotificationsProvider";
 import { getPublicAnnouncements } from "./services/api";
 import { NotificationsProvider } from "./components/ui/NotificationsProvider";
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/industries" element={<Industries />} />
           <Route path="/industries/:slug" element={<IndustryDetail />} />
           <Route path="/products" element={<Products />} />
+          {/* <Route path="/solutions" element={<Solutions />} /> */}
           <Route path="/products/:slug" element={<ProductDetail />} />
           <Route path="/associates" element={<Associates />} />
           <Route path="/contact" element={<Contact />} />

@@ -8,6 +8,12 @@ import {
   FileDown,
   CheckCircle2,
   BadgeCheck,
+  Workflow,
+  Layers,
+  PlugZap,
+  Cpu,
+  Wrench,
+  BarChart3,
 } from "lucide-react";
 import Footer from "../components/Footer";
 import { certifications, solutionPartner, policies } from "../data/mock";
@@ -158,6 +164,7 @@ const About = () => {
   const hero = useReveal(0.1);
   const story = useReveal(0.2);
   const partner = useReveal(0.2);
+  const values = useReveal(0.15);
   const certs = useReveal(0.2);
 
   useEffect(() => window.scrollTo(0, 0), []);
@@ -266,24 +273,103 @@ const About = () => {
               </div>
             </div>
 
-            {/* Right: big Siemens partner logo panel */}
-            <div className="relative">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(17,17,17,0.04),transparent_55%)]" />
-              <div className="p-8 sm:p-12 lg:p-14 flex items-center justify-center">
-                <div className="w-full max-w-[520px] rounded-3xl border border-gray-100 bg-white/90 backdrop-blur-xl shadow-xl overflow-hidden">
-                  <div className="p-6 sm:p-8">
-                    <img
-                      src={solutionPartner.logo || "/logos/siemens.svg"}
-                      alt="Siemens Solution Partner"
-                      className="w-full max-w-[420px] mx-auto object-contain rounded-xl border border-gray-100 shadow-sm"
-                    />
-                    <div className="mt-4 flex items-center justify-center">
-                      <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-700">
-                        <BadgeCheck className="h-4 w-4 text-gray-900" />
-                        {solutionPartner.validNote || "Certified partner"}
-                      </span>
-                    </div>
+            {/* Right: partner visual card (clean & responsive) */}
+            <div className="relative p-6 sm:p-10 lg:p-14">
+              <div className="rounded-3xl border border-gray-100 bg-white shadow-xl overflow-hidden">
+                <div className="aspect-[16/10] w-full grid place-items-center p-6">
+                  <img
+                    src={solutionPartner.logo || "/logos/siemens.svg"}
+                    alt="Siemens Solution Partner"
+                    className="max-h-full max-w-full object-contain drop-shadow-sm"
+                  />
+                </div>
+                <div className="border-t border-gray-100 p-4 flex items-center justify-center">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-700">
+                    <BadgeCheck className="h-4 w-4 text-gray-900" />
+                    {solutionPartner.validNote || "Certified partner"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </SectionShell>
+
+      {/* ===== Values / what we stand for ===== */}
+      <SectionShell className="pt-0">
+        <div
+          ref={values.ref}
+          className={`transition-all duration-700 ${values.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
+        >
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
+            {[
+              ["Dependability", "Clear SLAs, 24×7 support, and predictable delivery"],
+              ["Engineering first", "PCS 7 templates, tidy APIs, and clean data models"],
+              ["Pragmatism", "Modernize incrementally—leverage what already works"],
+            ].map(([title, copy]) => (
+              <div key={title} className="group glass-card shine p-5 sm:p-6">
+                <div className="flex items-start gap-3">
+                  <ShieldCheck className="h-5 w-5 text-gray-800" />
+                  <div>
+                    <div className="text-base font-semibold text-gray-900">{title}</div>
+                    <p className="mt-1 text-sm text-gray-600 leading-relaxed">{copy}</p>
                   </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </SectionShell>
+
+      {/* ===== Media: About Consulta (industry reels) ===== */}
+      <SectionShell className="pt-0">
+        <div
+          className={`transition-all duration-700 ${values.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
+        >
+          <div className="grid gap-6 lg:grid-cols-2 items-center">
+            <div>
+              <h3 className="text-2xl sm:text-3xl font-bold text-gray-900">Engineering in the field</h3>
+              <p className="mt-2 text-gray-700 leading-relaxed max-w-prose">
+                We deliver dependable systems for process industries: Cement, Power, Steel, Water, Pharma and more.
+                Here’s a quick glimpse of our work, sites, and test benches.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-gray-100 bg-white p-3 flex items-start gap-3">
+                  <Wrench className="h-5 w-5 text-gray-800" />
+                  <div>
+                    <div className="font-medium text-gray-900">PCS 7 lifecycle support</div>
+                    <div className="text-sm text-gray-700">Execution, upgrades, FAT/SAT</div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-gray-100 bg-white p-3 flex items-start gap-3">
+                  <PlugZap className="h-5 w-5 text-gray-800" />
+                  <div>
+                    <div className="font-medium text-gray-900">Connectivity</div>
+                    <div className="text-sm text-gray-700">OPC UA/HDA, clean data flows</div>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-gray-100 bg-white p-3 flex items-start gap-3 sm:col-span-2">
+                  <BarChart3 className="h-5 w-5 text-gray-800" />
+                  <div>
+                    <div className="font-medium text-gray-900">Repeatable delivery</div>
+                    <div className="text-sm text-gray-700">Validated templates & libraries</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="reveal-y">
+              <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-lg bg-black">
+                <div className="aspect-[16/9] w-full">
+                  <video
+                    src="/media/about.mp4"
+                    className="w-full h-full object-cover"
+                    controls
+                    playsInline
+                    preload="metadata"
+                    autoPlay
+                    muted
+                    loop
+                  />
                 </div>
               </div>
             </div>
@@ -293,7 +379,7 @@ const About = () => {
 
      
 
-      {/* ===== Solution Partner facts & actions ===== */}
+      {/* ===== Solution Partner (clean app-style section) ===== */}
       <SectionShell className="pt-0">
         <div
           ref={partner.ref}
@@ -301,95 +387,106 @@ const About = () => {
             partner.show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
           }`}
         >
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
-            <div className="flex-1">
-              <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-sm text-gray-700">
-                <ShieldCheck className="h-4 w-4" />
-                Official Partner
+          <div className="rounded-3xl border border-gray-100 bg-white shadow-sm p-5 sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">{solutionPartner.name}</h2>
+                <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-sm text-gray-700">
+                  <ShieldCheck className="h-4 w-4" /> Official Partner
+                </span>
               </div>
-
-              <h2 className="mt-3 text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
-                {solutionPartner.name}
-              </h2>
-              <p className="mt-2 sm:mt-3 text-gray-700">
-                Tier: <span className="font-medium">{solutionPartner.tier}</span> · Since{" "}
-                {solutionPartner.since}
-              </p>
-
-              <div className="mt-4 grid gap-2 sm:gap-3 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
-                {solutionPartner.highlights.map((h) => (
-                  <div key={h} className="rounded-2xl border border-gray-100 bg-white/80 backdrop-blur-sm shadow-sm p-3 sm:p-4 text-sm text-gray-700">
-                    {h}
-                  </div>
-                ))}
+              <div className="text-sm text-gray-700">
+                Tier: <span className="font-medium">{solutionPartner.tier}</span> · Since {solutionPartner.since}
               </div>
+            </div>
 
-              {solutionPartner.scope?.length > 0 && (
-                <div className="mt-4 -m-1.5 flex flex-wrap">
-                  {solutionPartner.scope.map((s) => (
-                    <div key={s} className="m-1.5">
-                      <Pill>{s}</Pill>
+            {/* quick info grid */}
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 reveal-y">
+              <div className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
+                <div className="text-xs text-gray-500">Portfolio Module</div>
+                <div className="mt-1 font-medium text-gray-900">{solutionPartner?.module || "Process Control System PCS 7"}</div>
+              </div>
+              <div className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
+                <div className="text-xs text-gray-500">Certified Through</div>
+                <div className="mt-1 font-medium text-gray-900">{solutionPartner?.validNoteDate || "Oct 2025"}</div>
+              </div>
+              <div className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
+                <div className="text-xs text-gray-500">Templates & Libraries</div>
+                <div className="mt-1 text-sm text-gray-700">Validated and versioned</div>
+              </div>
+              <div className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm">
+                <div className="text-xs text-gray-500">Connectivity</div>
+                <div className="mt-1 text-sm text-gray-700">OPC UA/HDA gateways</div>
+              </div>
+            </div>
+
+            {/* main content */}
+            <div className="mt-5 grid gap-4 lg:grid-cols-3">
+              {/* Big Highlights section spans two columns on large screens */}
+              <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm reveal-y lg:col-span-2">
+                <div className="text-sm font-semibold text-gray-900 mb-2">Highlights</div>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="rounded-xl border border-gray-100 bg-white p-3 flex items-start gap-3">
+                    <Workflow className="h-5 w-5 text-gray-800" />
+                    <div>
+                      <div className="font-medium text-gray-900">Lifecycle delivery</div>
+                      <div className="text-sm text-gray-700">FAT/SAT, upgrades, dependable support</div>
                     </div>
-                  ))}
+                  </div>
+                  <div className="rounded-xl border border-gray-100 bg-white p-3 flex items-start gap-3">
+                    <Layers className="h-5 w-5 text-gray-800" />
+                    <div>
+                      <div className="font-medium text-gray-900">Templates & libraries</div>
+                      <div className="text-sm text-gray-700">Reusable, versioned, governed</div>
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-gray-100 bg-white p-3 flex items-start gap-3">
+                    <PlugZap className="h-5 w-5 text-gray-800" />
+                    <div>
+                      <div className="font-medium text-gray-900">Connectivity</div>
+                      <div className="text-sm text-gray-700">OPC UA/HDA, gateways, clean APIs</div>
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-gray-100 bg-white p-3 flex items-start gap-3">
+                    <Cpu className="h-5 w-5 text-gray-800" />
+                    <div>
+                      <div className="font-medium text-gray-900">Data foundations</div>
+                      <div className="text-sm text-gray-700">Tags, historians, retrieval strategy</div>
+                    </div>
+                  </div>
                 </div>
-              )}
-
-              <div className="mt-5 flex flex-wrap gap-3">
                 {solutionPartner.link && (
-                  <a
-                    href={solutionPartner.link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-50"
-                  >
-                    Verify Partner Page <ExternalLink className="h-4 w-4" />
-                  </a>
+                  <div className="mt-4">
+                    <a href={solutionPartner.link} target="_blank" rel="noreferrer" className="apple-button inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-50">
+                      Verify Partner Page <ExternalLink className="h-4 w-4" />
+                    </a>
+                  </div>
                 )}
-                {solutionPartner.certificatePdf && (
-                  <a
-                    href={solutionPartner.certificatePdf}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-50"
-                  >
-                    View Certificate (PDF) <FileDown className="h-4 w-4" />
-                  </a>
-                )}
+              </div>
+
+              {/* Right column: stacked Quality and Safety policies */}
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm reveal-y">
+                  <div className="text-sm font-semibold text-gray-900 mb-2">Quality Policy</div>
+                  <p className="text-sm text-gray-700 leading-relaxed">{policies.quality}</p>
+                </div>
+                <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm reveal-y">
+                  <div className="text-sm font-semibold text-gray-900 mb-2">Safety Policy</div>
+                  <p className="text-sm text-gray-700 leading-relaxed">{policies.safety}</p>
+                  {solutionPartner.certificatePdf && (
+                    <div className="mt-4 border-t border-gray-100 pt-4">
+                      <div className="text-sm font-semibold text-gray-900 mb-2">Certificate</div>
+                      <a href={solutionPartner.certificatePdf} target="_blank" rel="noreferrer" className="apple-button inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-50">
+                        View Certificate (PDF) <FileDown className="h-4 w-4" />
+                      </a>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="flex-1 w-full">
-              {/* top info strip */}
-              <div className="rounded-3xl border border-gray-100 bg-white/80 backdrop-blur-sm shadow-sm p-3 sm:p-4">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                  <div className="flex-1 text-[12px] sm:text-sm text-gray-700">
-                    <span className="text-gray-600">Portfolio Module:&nbsp;</span>
-                    <span className="font-medium text-gray-900">{solutionPartner.certificateId}</span>
-                  </div>
-                  <div className="text-[12px] sm:text-sm text-gray-700 inline-flex items-center gap-2">
-                    <BadgeCheck className="h-4 w-4 text-gray-700" />
-                    {solutionPartner.validNote}
-                  </div>
-                </div>
-              </div>
-
-              {/* policies */}
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-gray-100 bg-white/80 backdrop-blur-sm shadow-sm p-4">
-                  <div className="text-sm font-semibold text-gray-900">Quality Policy</div>
-                  <p className="mt-1 text-sm text-gray-700 leading-relaxed">{policies.quality}</p>
-                </div>
-                <div className="rounded-2xl border border-gray-100 bg-white/80 backdrop-blur-sm shadow-sm p-4">
-                  <div className="text-sm font-semibold text-gray-900">Safety Policy</div>
-                  <p className="mt-1 text-sm text-gray-700 leading-relaxed">{policies.safety}</p>
-                </div>
-              </div>
-            </div>
+            <p className="mt-4 text-xs text-gray-500">Logos and trademarks belong to their respective owners and are used for identification only.</p>
           </div>
-
-          <p className="mt-4 text-xs text-gray-500">
-            Logos and trademarks belong to their respective owners and are used for identification only.
-          </p>
         </div>
       </SectionShell>
 

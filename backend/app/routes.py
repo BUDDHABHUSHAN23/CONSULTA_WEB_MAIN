@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Header , Query  , Body
+from fastapi.responses import JSONResponse
 from typing import List, Optional
 from datetime import datetime
 import os
@@ -327,6 +328,69 @@ async def create_product(payload: ProductIn, _=Depends(_admin_guard)):
     res = await db.products.insert_one(doc)
     saved = await db.products.find_one({"_id": res.inserted_id})
     return _to_product(saved)
+
+# -------------- Industry Sections (for FE scroll-UI) ---------------
+
+@router.get("/industries/sections")
+async def get_industry_sections():
+    sections = [
+        {
+            "id": "cement",
+            "title": "Cement",
+            "subtitle": "Kiln, stacker/reclaimer, packing",
+            "bullets": [
+                "PCS 7/CEMAT templates and interlocks",
+                "Energy KPIs for mills and fans",
+                "Baghouse, coolers, and blending automation",
+            ],
+            "image": "/logos/ultratech.png",
+        },
+        {
+            "id": "power",
+            "title": "Power",
+            "subtitle": "Boiler-TG, BOP, water systems",
+            "bullets": [
+                "DCS/SCADA upgrades with hot cutover",
+                "Historian and alarm rationalization",
+                "OPC UA gateways for OEM islands",
+            ],
+            "image": "/logos/tatapower.jpg",
+        },
+        {
+            "id": "steel",
+            "title": "Steel",
+            "subtitle": "SMS, CRM, utilities",
+            "bullets": [
+                "Drive coordination and inter-area handshakes",
+                "Roll tracking, coil and heat genealogy",
+                "Energy and water balance dashboards",
+            ],
+            "image": "/logos/jswcement.png",
+        },
+        {
+            "id": "water",
+            "title": "Water & Wastewater",
+            "subtitle": "Treatment, lift stations, reservoirs",
+            "bullets": [
+                "Redundant PLC/SCADA, remote telemetry",
+                "Event-based reporting and incident replays",
+                "GIS-friendly tags and meta data",
+            ],
+            "image": "/logos/mcgm.png",
+        },
+        {
+            "id": "pharma",
+            "title": "Pharma & Life sciences",
+            "subtitle": "HVAC, WFI/clean utilities",
+            "bullets": [
+                "Audit trails, electronic signatures",
+                "Batch with ISA-88 structures",
+                "Validated reporting and CFR Part 11",
+            ],
+            "image": "/logos/jnj.png",
+        },
+    ]
+    return JSONResponse(content={"items": sections})
 
 @router.put("/admin/products/{pid}", response_model=ProductOut)
 async def update_product(pid: str, payload: ProductIn, _=Depends(_admin_guard)):
