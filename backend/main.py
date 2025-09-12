@@ -71,6 +71,11 @@ def make_app() -> FastAPI:
         await db.announcements.create_index([("enabled", 1), ("starts_at", 1), ("ends_at", 1), ("priority", 1)])
         await db.announcements.create_index([("updated_at", -1)])
 
+
+    @app.get("/healthz")
+    def healthz():
+        return {"ok": True}
+
     return app
 
 

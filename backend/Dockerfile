@@ -33,4 +33,3 @@ ENV CORS_ORIGINS="*"
 
 # Start with Gunicorn + Uvicorn workers
 CMD sh -c 'gunicorn -k uvicorn.workers.UvicornWorker -w ${WEB_CONCURRENCY:-2} -b 0.0.0.0:${PORT:-8000} main:app'
-
