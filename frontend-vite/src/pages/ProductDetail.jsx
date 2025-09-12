@@ -108,6 +108,22 @@ export default function ProductDetail() {
       </div>
     );
 
+  // helpers for safe conditional rendering (avoid printing 0)
+  const hasIntegrationsOrCompat =
+    ((p?.integrations?.length ?? 0) + (p?.compatibility?.length ?? 0)) > 0;
+
+  const hasDocsOrResources =
+    ((p?.docs?.length ?? 0) + (p?.resources?.length ?? 0)) > 0;
+
+  const hasInsightsOrNotes =
+    (p?.insights?.length ?? 0) > 0 || Boolean(p?.internal_notes);
+
+  const hasIndustriesOrUseCases =
+    ((p?.industries?.length ?? 0) + (p?.use_cases?.length ?? 0)) > 0;
+
+  const hasStoresOrPricing =
+    (p?.stores?.length ?? 0) > 0 || Boolean(p?.pricing);
+
   return (
     <div className="min-h-screen bg-white">
       {/* ----------- Header / hero ----------- */}
@@ -176,7 +192,7 @@ export default function ProductDetail() {
             {/* Key features */}
             {feats.length > 0 && (
               <SectionCard title="Key features" icon={<Layers className="h-5 w-5 text-gray-900" />}>
-                <div className="mt-3 grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
+                <div className="mt-3 grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
                   {feats.map((f, i) => (
                     <div key={i} className="flex items-start gap-3">
                       <Check className="h-5 w-5 text-gray-900" />
@@ -187,14 +203,14 @@ export default function ProductDetail() {
               </SectionCard>
             )}
 
-            {/* Integrations / Compatibility (OPC, PLCs, Historians, etc.) */}
-            {(p?.integrations?.length || p?.compatibility?.length) && (
+            {/* Integrations / Compatibility */}
+            {hasIntegrationsOrCompat && (
               <SectionCard
                 title="Integrations & Compatibility"
                 icon={<Link2 className="h-5 w-5 text-gray-900" />}
               >
                 <div className="grid md:grid-cols-2 gap-6">
-                  {p?.integrations?.length ? (
+                  {(p?.integrations?.length ?? 0) > 0 ? (
                     <div>
                       <div className="text-sm font-semibold text-gray-900 mb-2">Integrates with</div>
                       <div className="flex flex-wrap gap-2">
@@ -205,7 +221,7 @@ export default function ProductDetail() {
                     </div>
                   ) : null}
 
-                  {p?.compatibility?.length ? (
+                  {(p?.compatibility?.length ?? 0) > 0 ? (
                     <div>
                       <div className="text-sm font-semibold text-gray-900 mb-2">Compatible with</div>
                       <div className="flex flex-wrap gap-2">
@@ -220,7 +236,7 @@ export default function ProductDetail() {
             )}
 
             {/* Docs / Resources */}
-            {(p?.docs?.length || p?.resources?.length) && (
+            {hasDocsOrResources && (
               <SectionCard title="Resources" icon={<FileText className="h-5 w-5 text-gray-900" />}>
                 <div className="grid sm:grid-cols-2 gap-3">
                   {(p.docs || []).map((d, i) => (
@@ -251,13 +267,13 @@ export default function ProductDetail() {
               </SectionCard>
             )}
 
-            {/* Internal insights (visible only if API provides) */}
-            {(p?.insights?.length || p?.internal_notes) && (
+            {/* Internal insights */}
+            {hasInsightsOrNotes && (
               <SectionCard
                 title="Internal insights"
                 icon={<Tag className="h-5 w-5 text-gray-900" />}
               >
-                {p?.insights?.length ? (
+                {(p?.insights?.length ?? 0) > 0 ? (
                   <ul className="list-disc pl-5 space-y-2 text-sm text-gray-800">
                     {p.insights.map((t, i) => (
                       <li key={i}>{t}</li>
@@ -269,7 +285,6 @@ export default function ProductDetail() {
                     {p.internal_notes}
                   </p>
                 ) : null}
-                {/* Optional badge to remind this is internal */}
                 <div className="mt-4 inline-flex items-center gap-2 text-xs text-gray-600">
                   <span className="h-2 w-2 rounded-full bg-yellow-400" />
                   For internal reference only
@@ -279,15 +294,15 @@ export default function ProductDetail() {
           </div>
 
           {/* ----------- Right rail (quick facts) ----------- */}
-          <aside className="space-y-6">
+          <aside className="space-y-6 lg:sticky lg:top-24 self-start">
             {/* Quick facts / Specs */}
-            {(p?.specs && Object.keys(p.specs).length > 0) && (
+            {p?.specs && Object.keys(p.specs).length > 0 && (
               <SectionCard title="Specs" icon={<Layers className="h-5 w-5 text-gray-900" />}>
                 <dl className="grid grid-cols-1 gap-y-3 text-sm">
                   {Object.entries(p.specs).map(([k, v]) => (
                     <div key={k} className="flex items-start justify-between gap-3">
                       <dt className="text-gray-500">{k}</dt>
-                      <dd className="text-gray-900 text-right">{String(v)}</dd>
+                      <dd className="text-gray-900 text-right break-words">{String(v)}</dd>
                     </div>
                   ))}
                 </dl>
@@ -295,16 +310,16 @@ export default function ProductDetail() {
             )}
 
             {/* Industries / Use cases */}
-            {(p?.industries?.length || p?.use_cases?.length) && (
+            {hasIndustriesOrUseCases && (
               <SectionCard title="Use in industries" icon={<Building2 className="h-5 w-5 text-gray-900" />}>
-                {p?.industries?.length ? (
+                {(p?.industries?.length ?? 0) > 0 ? (
                   <div className="mb-3 flex flex-wrap gap-2">
                     {p.industries.map((i, idx) => (
                       <Pill key={idx}>{i}</Pill>
                     ))}
                   </div>
                 ) : null}
-                {p?.use_cases?.length ? (
+                {(p?.use_cases?.length ?? 0) > 0 ? (
                   <ul className="list-disc pl-5 space-y-1.5 text-sm text-gray-800">
                     {p.use_cases.map((u, i) => (
                       <li key={i}>{u}</li>
@@ -315,7 +330,7 @@ export default function ProductDetail() {
             )}
 
             {/* Stores / Distributors / Licensing */}
-            {(p?.stores?.length || p?.pricing) && (
+            {hasStoresOrPricing && (
               <SectionCard title="Stores & licensing" icon={<Store className="h-5 w-5 text-gray-900" />}>
                 {p?.pricing ? (
                   <div className="mb-4 rounded-xl border border-gray-200 p-3">
@@ -326,7 +341,7 @@ export default function ProductDetail() {
                     )}
                   </div>
                 ) : null}
-                {p?.stores?.length ? (
+                {(p?.stores?.length ?? 0) > 0 ? (
                   <div className="space-y-2">
                     {p.stores.map((s, i) => (
                       <a
