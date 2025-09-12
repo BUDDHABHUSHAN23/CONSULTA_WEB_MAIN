@@ -32,5 +32,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 ENV CORS_ORIGINS="*"
 
 # Start with Gunicorn + Uvicorn workers
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "2", "-b", "0.0.0.0:${PORT:-8000}", "main:app"]
+CMD sh -c 'gunicorn -k uvicorn.workers.UvicornWorker -w ${WEB_CONCURRENCY:-2} -b 0.0.0.0:${PORT:-8000} main:app'
 
