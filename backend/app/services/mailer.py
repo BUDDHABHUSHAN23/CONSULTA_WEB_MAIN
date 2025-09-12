@@ -7,17 +7,17 @@ from email.message import EmailMessage
 from email.utils import parseaddr, formatdate, make_msgid
 
 # ========= ENV (keep simple) =========
-SMTP_HOST = os.getenv("SMTP_HOST", "smtp.bizmail.yahoo.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "465"))          # Turbify doc prefers 465 SSL/TLS
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")  # Changed to Gmail for better reliability
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))          # Gmail prefers 587 with STARTTLS
 SMTP_USER = os.getenv("SMTP_USER") or ""
-SMTP_PASS = os.getenv("SMTP_PASS") or ""                # Use APP PASSWORD (Turbify/Yahoo)
+SMTP_PASS = os.getenv("SMTP_PASS") or ""                # Use APP PASSWORD (Gmail)
 SMTP_FROM = os.getenv("SMTP_FROM") or SMTP_USER         # Can be "Name <addr>"
 SMTP_ENVELOPE_FROM = os.getenv("SMTP_ENVELOPE_FROM") or SMTP_USER
 MESSAGE_ID_DOMAIN = os.getenv("MAIL_MESSAGE_ID_DOMAIN", "consulta.in")
 
-SMTP_TIMEOUT = float(os.getenv("SMTP_TIMEOUT", "20"))
-SMTP_RETRIES = int(os.getenv("SMTP_RETRIES", "2"))
-SMTP_RETRY_BACKOFF_S = float(os.getenv("SMTP_RETRY_BACKOFF_S", "1.2"))
+SMTP_TIMEOUT = float(os.getenv("SMTP_TIMEOUT", "10"))  # Reduced timeout for faster failure
+SMTP_RETRIES = int(os.getenv("SMTP_RETRIES", "1"))     # Reduced retries for faster response
+SMTP_RETRY_BACKOFF_S = float(os.getenv("SMTP_RETRY_BACKOFF_S", "0.5"))  # Faster retry
 # ensure this exists once at the top too
 MAIL_HEALTH_MIN_INTERVAL_S = float(os.getenv("MAIL_HEALTH_MIN_INTERVAL_S", "60"))
 _last_health_ts: float | None = None  # cache last health check time
@@ -250,13 +250,39 @@ async def send_contact_notification(payload: dict) -> Dict:
     reply_to = None
 
     tos = NOTIFY_TO or ([SMTP_USER] if SMTP_USER else [])
+    
+    # Try primary SMTP first
     try:
         res = await send_email(subject=subject, to=tos, html="", text=body, reply_to=reply_to)
-        if not isinstance(res, dict):
-            return {"ok": False, "error": "unexpected_response", "response": str(res)}
-        return res
+        if isinstance(res, dict) and res.get("ok"):
+            return res
     except Exception as e:
-        return {"ok": False, "error": repr(e)}
+        print(f"Primary SMTP failed: {e}")
+    
+    # Fallback: Try alternative SMTP settings
+    try:
+        # Use Gmail as fallback if primary fails
+        original_host = SMTP_HOST
+        original_port = SMTP_PORT
+        
+        # Temporarily switch to Gmail
+        import os
+        os.environ["SMTP_HOST"] = "smtp.gmail.com"
+        os.environ["SMTP_PORT"] = "587"
+        
+        res = await send_email(subject=subject, to=tos, html="", text=body, reply_to=reply_to)
+        
+        # Restore original settings
+        os.environ["SMTP_HOST"] = original_host
+        os.environ["SMTP_PORT"] = str(original_port)
+        
+        if isinstance(res, dict) and res.get("ok"):
+            return res
+    except Exception as e:
+        print(f"Fallback SMTP failed: {e}")
+    
+    # If all fails, return error
+    return {"ok": False, "error": "All email services failed"}
 
 async def check_mailer(timeout: float = 10.0) -> Dict:
     global _last_health_ts

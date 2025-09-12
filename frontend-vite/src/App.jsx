@@ -16,6 +16,8 @@ import Blogs from "./pages/Blogs";
 import IndustryDetail from "./pages/IndustryDetail";
 import Products from "./pages/Services";
 import ProductDetail from "./pages/ProductDetail";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 // import Solutions from "./pages/Solutions";
 import { useNotifications } from "./components/ui/NotificationsProvider";
 import { getPublicAnnouncements } from "./services/api";
@@ -45,6 +47,8 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/careers" element={<Careers />} />
           <Route path="/blogs" element={<Blogs />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         {/* ✅ Global mounts */}

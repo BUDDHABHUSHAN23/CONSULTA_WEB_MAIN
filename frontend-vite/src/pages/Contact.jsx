@@ -7,7 +7,7 @@ import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { useNotifications } from "../components/ui/NotificationsProvider";
 import { companyAPI } from "../services/api";
-import GoogleMapComponent from "../components/GoogleMapComponent";
+import MapCard from "../components/MapCard";
 import PeekBanner from "../components/PeekBanner";
 import useReveal from "../hooks/useReveal";
 // for the noti
@@ -47,11 +47,28 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
+      // Basic client validation before network
+      if (!formData.name || !formData.email || !formData.phone || !formData.message) {
+        add({ title: "Please fill all required fields", type: "error" });
+        setIsSubmitting(false);
+        return;
+      }
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+      if (!emailOk) {
+        add({ title: "Enter a valid email address", type: "error" });
+        setIsSubmitting(false);
+        return;
+      }
+      if (formData.message.trim().length < 10) {
+        add({ title: "Message is too short", description: "Add a bit more detail.", type: "error" });
+        setIsSubmitting(false);
+        return;
+      }
       // Import API service
       const { contactAPI } = await import('../services/api');
       
       // Submit contact form
-      await contactAPI.create(formData);
+      const result = await contactAPI.create(formData);
       
       add({
         title: "Message Sent Successfully",
@@ -371,9 +388,7 @@ const Contact = () => {
                   </p>
                 </div>
                 
-                <div className="h-80">
-                  <GoogleMapComponent />
-                </div>
+                <MapCard showHeader={false} />
 
                 <div className="p-6 bg-secondary">
                   <div className="text-sm text-muted-foreground leading-relaxed">

@@ -41,8 +41,7 @@ const ProductCard = ({ p, index, compact = false, featured = false }) => {
       ].join(" ")}
       style={{ transitionDelay: `${Math.min(index * 60, 240)}ms` }}
     >
-      {/* subtle top accent */}
-      <span className="absolute left-0 right-0 top-0 h-0.5 rounded-t-2xl bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 opacity-0 group-hover:opacity-100 transition-opacity" />
+      {/* removed decorative top accent to avoid faint line artifacts */}
 
       {/* header: logo + title/tagline */}
       <div className="flex items-start gap-4">

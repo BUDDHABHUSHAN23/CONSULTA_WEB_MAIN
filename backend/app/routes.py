@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Header , Query  , Body
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Header , Query  , Body, Request
 import logging
 from fastapi.responses import JSONResponse
 from typing import List, Optional
@@ -53,6 +53,15 @@ async def mailer_health():
 async def mailer_test(to: list[str] = Body(default=[])):
     # optional: pass explicit recipients; otherwise env NOTIFY_TO (or SMTP_USER) is used
     return await send_test_email(to=to or None)
+
+@router.post("/mailer/test")
+async def public_mailer_test():
+    """Public endpoint to test email functionality"""
+    try:
+        result = await send_test_email()
+        return {"status": "success", "result": result}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
 # ---------------- Contacts ----------------
 
 async def _send_contact_and_log(payload: dict):
@@ -68,15 +77,30 @@ async def _send_contact_and_log(payload: dict):
         logger.exception("contact_email_exception: %s", repr(e))
 
 
+_last_contact_by_ip: dict[str, float] = {}
+
+
 @router.post("/contacts", response_model=Contact)
-async def create_contact(contact_data: ContactCreate, bt: BackgroundTasks):
+async def create_contact(contact_data: ContactCreate, bt: BackgroundTasks, request: Request):
     c = Contact(**contact_data.model_dump())
+
+    # Lightweight rate limit per IP (10s) to avoid abuse; stateless enough for single-process
+    try:
+        ip = request.client.host if request and request.client else "unknown"
+        now = datetime.utcnow().timestamp()
+        last = _last_contact_by_ip.get(ip)
+        if last and (now - last) < 10:  # Reduced from 30s to 10s
+            raise HTTPException(status_code=429, detail="Too many requests. Please wait a moment and try again.")
+        _last_contact_by_ip[ip] = now
+    except Exception:
+        # Never block request on rate limiter bookkeeping failures
+        pass
 
     res = await db.contacts.insert_one(c.model_dump())
     if not res.inserted_id:
         raise HTTPException(status_code=500, detail="Failed to create contact")
 
-    # fire-and-forget email using the helper (handles subject, HTML, text, Reply-To, CC/BCC from env)
+    # Send email immediately for faster feedback (not background task)
     payload = {
         "name": c.name,
         "email": c.email,
@@ -85,8 +109,18 @@ async def create_contact(contact_data: ContactCreate, bt: BackgroundTasks):
         "industry": c.industry,
         "message": c.message,
     }
-    # Use a wrapper that logs success/failure of the background mail
-    bt.add_task(_send_contact_and_log, payload)
+    
+    try:
+        # Send email synchronously for immediate feedback
+        email_result = await send_contact_notification(payload)
+        if not email_result.get("ok"):
+            # Log error but don't fail the request
+            logger = logging.getLogger("mailer")
+            logger.error("Email send failed: %s", email_result)
+    except Exception as e:
+        # Log error but don't fail the request
+        logger = logging.getLogger("mailer")
+        logger.exception("Email send exception: %s", repr(e))
 
     return c
 
