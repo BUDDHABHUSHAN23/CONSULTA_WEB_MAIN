@@ -125,7 +125,7 @@ const ProductCard = ({ p, index, compact = false, featured = false }) => {
         >
           Learn more
         </Link>
-        {p.website && (
+        {/* {p.website && (
           <a
             href={p.website}
             target="_blank"
@@ -134,7 +134,7 @@ const ProductCard = ({ p, index, compact = false, featured = false }) => {
           >
             Website <ExternalLink className="h-3.5 w-3.5" />
           </a>
-        )}
+        )} */}
       </div>
     </article>
   );

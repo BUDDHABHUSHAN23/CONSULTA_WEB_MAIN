@@ -147,7 +147,7 @@ export default function ProductDetail() {
                 ))}
               </div>
 
-              {p.website && (
+              {/* {p.website && (
                 <a
                   href={p.website}
                   target="_blank"
@@ -156,7 +156,7 @@ export default function ProductDetail() {
                 >
                   Visit website <ExternalLink className="h-3.5 w-3.5" />
                 </a>
-              )}
+              )} */}
             </div>
           </div>
         </div>
