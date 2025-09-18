@@ -1,0 +1,13 @@
+{
+  "name": "consulta-web",
+  "private": true,
+  "scripts": {
+    "dev:web": "npm --prefix web-frontend run dev",
+    "dev:erp": "npm --prefix erp-api run dev",
+    "dev:site": "python -m uvicorn main:app --app-dir web-api --port 8000 --reload",
+    "dev": "concurrently -n WEB,ERP,SITE -c auto \"npm run dev:web\" \"npm run dev:erp\" \"npm run dev:site\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
