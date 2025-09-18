@@ -654,7 +654,7 @@ export const sampleAssociates = [
   {
     id: "cocacola",
     name: "Coca-Cola",
-    logo: "/logos/cocacola.png",
+    logo: "/logos/cocacola.svg",
     website: "https://www.coca-cola.com",
     blurb: "Beverages and FMCG manufacturing.",
     industries: ["FMCG"],

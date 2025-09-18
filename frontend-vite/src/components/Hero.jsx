@@ -55,7 +55,7 @@ const Hero = () => {
   const logos = [
     { src: "/logos/siemens.svg", alt: "Siemens" },
     { src: "/logos/dell.svg", alt: "Dell Technologies" },
-    { src: "/logos/Cytiva.svg", alt: "Cytiva" },
+    { src: "/logos/smartsights.svg", alt: "smartsights" },
   ];
 
   return (
@@ -161,14 +161,14 @@ const Hero = () => {
                   [--gap:2.75rem]
                 "
               >
-                <ul className="
+                <ul className=" 
                   flex items-center min-w-max gap-[var(--gap)]
                   max-w-full
                   animate-[logoMarquee_28s_linear_infinite] sm:animate-[logoMarquee_24s_linear_infinite]
                 ">
                   {[...logos, ...logos].map((logo, i) => (
                     <li key={i} className="logo-frame shrink-0">
-                      <img src={logo.src} alt={logo.alt} className="h-7 sm:h-8 grayscale opacity-70" />
+                      <img src={logo.src} alt={logo.alt} className="h-7 sm:h-8  grayscale opacity-70 transition-all duration-300 hover:grayscale-0 hover:opacity-70 hover:scale-105" />
                     </li>
                   ))}
                 </ul>
@@ -207,7 +207,6 @@ const Hero = () => {
             onClose={() => setShowVideo(false)}
             src="/media/demo.mp4"
             poster="/media/demo-poster.jpg"
-            title="Consulta Demo"
             id="demo-video"
           />
         )}

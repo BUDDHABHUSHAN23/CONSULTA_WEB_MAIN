@@ -1,0 +1,22 @@
+# --- React/Vite SPA fallback (LiteSpeed/Apache) ---
+Options -MultiViews
+RewriteEngine On
+RewriteBase /
+
+# 0) Let special files through
+RewriteRule ^(robots\.txt|sitemap\.xml|\.well-known/.*)$ - [L,NC]
+
+# 1) Serve static assets directly
+RewriteRule \.(css|js|mjs|map|json|png|jpg|jpeg|gif|svg|ico|webp|ttf|otf|woff|woff2|eot|txt|pdf)$ - [L,NC]
+
+# 2) Let existing files/folders pass
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule . - [L]
+
+# 3) Don’t rewrite API calls (frontend hits Render directly)
+RewriteRule ^api/ - [L,NC]
+
+# 4) Only page navigations (GET/HEAD) fall back to index.html
+RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+RewriteRule . /index.html [L]

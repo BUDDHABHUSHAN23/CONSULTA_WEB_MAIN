@@ -16,7 +16,7 @@ L.Icon.Default.mergeOptions({
 
 // Consulta Technologies location in CBD Belapur, Navi Mumbai
 // Adjusted coordinates for more precise positioning
-const center = [19.0178, 73.0367];
+const center = [19.01917, 73.04005];
 
 export default function MapCard({ showHeader = true }) {
   const [isClient, setIsClient] = useState(false);
@@ -127,7 +127,7 @@ export default function MapCard({ showHeader = true }) {
                   <br />
                   <div className="mt-2">
                     <a 
-                      href="https://maps.google.com/?q=19.0176147,73.0365315" 
+                      href="https://www.google.com/maps/place/Consulta+Technologies+Pvt.+Ltd./@19.0191127,73.0394054,279m/data=!3m2!1e3!4b1!4m6!3m5!1s0x3be7c3ad4e159a4b:0xf4d662aa150db6a2!8m2!3d19.0191114!4d73.0400491!16s%2Fg%2F1hdzxc4f_?entry=ttu&g_ep=EgoyMDI1MDkxMC4wIKXMDSoASAFQAw%3D%3D" 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:text-blue-800 underline"
