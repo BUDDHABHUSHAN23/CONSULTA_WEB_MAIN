@@ -8,6 +8,7 @@
     "dev": "concurrently -n WEB,ERP,SITE -c auto \"npm run dev:web\" \"npm run dev:erp\" \"npm run dev:site\""
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "dotenv": "^16.6.1"
   }
 }

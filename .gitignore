@@ -1,43 +1,71 @@
+# -----------------------
 # General
+# -----------------------
 .DS_Store
 Thumbs.db
 *.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# env files (root or anywhere)
 .env
 .env.local
 .env.*.local
+
+# Editors / tooling
 .vscode/
 .idea/
-coverage/
 .eslintcache
+coverage/
 
-# Backend (Python/FastAPI)
-backend/.env
-backend/.venv/
-backend/__pycache__/
-backend/**/*.pyc
-backend/.mypy_cache/
-backend/.pytest_cache/
-backend/.ruff_cache/
+# If you installed dev tools at repo root (concurrently, etc.)
+node_modules/
 
-# Frontend (React/Node)
-frontend/.env
-frontend/node_modules/
-frontend/build/
-frontend/.cache/
-frontend/.parcel-cache/
-frontend/.pnp
-frontend/.pnp.js
-frontend/pnpm-lock.yaml
-frontend/yarn-error.log
-frontend/.sass-cache/
-frontend/.eslintcache
+# Vercel local folder (if you ever use the CLI)
+.vercel/
 
-# Docker/ops
+# -----------------------
+# web-api (FastAPI / Python)
+# -----------------------
+web-api/.env
+web-api/.venv/
+web-api/__pycache__/
+web-api/**/*.pyc
+web-api/.mypy_cache/
+web-api/.pytest_cache/
+web-api/.ruff_cache/
+web-api/.coverage*
+web-api/htmlcov/
+
+# -----------------------
+# erp-api (Express / Node)
+# -----------------------
+erp-api/.env
+erp-api/node_modules/
+erp-api/coverage/
+erp-api/npm-debug.log*
+erp-api/yarn-error.log
+
+# -----------------------
+# web-frontend (React / Vite)
+# -----------------------
+web-frontend/.env
+web-frontend/node_modules/
+web-frontend/dist/
+web-frontend/.cache/
+web-frontend/.parcel-cache/
+web-frontend/.pnp
+web-frontend/.pnp.js
+web-frontend/pnpm-lock.yaml
+web-frontend/yarn-error.log
+web-frontend/.sass-cache/
+web-frontend/.eslintcache
+
+# -----------------------
+# Docker / Ops / Infra
+# -----------------------
 .env.docker
 docker-compose.override.yml
-
-# OS/Editor junk
-*.swp
-*.swo
-*.tmp
-*.bak
+infra/*.env
