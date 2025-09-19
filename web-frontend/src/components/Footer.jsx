@@ -158,7 +158,9 @@ const Footer = () => {
               </div>
             </div>
           </div>
+
         </div>
+
 
         {/* Bottom Footer */}
         <div className="border-t border-gray-800 py-6">
@@ -168,6 +170,13 @@ const Footer = () => {
             </div>
 
             <div className="flex items-center space-x-6">
+                {/* Quiet staff link */}
+                <Link
+                  to="/ter/login"
+                  className="text-gray-400 hover:text-white text-sm transition-colors"
+                  rel="nofollow"      >
+                Employee Portal+     
+                </Link>
               <Link
                 to="/privacy"
                 className="text-gray-400 hover:text-white text-sm transition-colors"

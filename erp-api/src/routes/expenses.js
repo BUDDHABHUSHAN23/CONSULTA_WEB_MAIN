@@ -5,6 +5,7 @@ import Expense from "../models/Expense.js";
 import { env } from "../config/env.js";
 import { requireAuth, requireRole } from "../middlewares/auth.js";
 import { s3Put, s3SignedGet } from "../loaders/s3.js";
+import fetch from "node-fetch";
 
 const router = express.Router();
 
@@ -170,6 +171,54 @@ router.get("/my", requireAuth, async (req, res) => {
     .limit(Number(limit));
   res.json(docs);
 });
+
+
+// Attach by URL(s): body = { "urls": ["https://.../a.jpg", "https://.../b.pdf"] }
+router.post("/:id/attachments-from-url", requireAuth, async (req, res) => {
+  const exp = await Expense.findById(req.params.id);
+  if (!exp) return res.status(404).json({ error: "Not found" });
+
+  const isOwner = exp.employeeId === req.user.id;
+  if (!isOwner) return res.status(403).json({ error: "Forbidden" });
+
+  // Only allow editing when DRAFT/REJECTED (adjust if you want SUBMITTED too)
+  if (!["DRAFT", "REJECTED"].includes(exp.status)) {
+    return res.status(400).json({ error: "Only DRAFT/REJECTED can be edited" });
+  }
+
+  const urls = Array.isArray(req.body.urls) ? req.body.urls : [];
+  if (!urls.length) return res.status(400).json({ error: "No urls provided" });
+
+  const ts = Date.now();
+  const baseKey = `expenses/${req.user.id}/${ts}`;
+
+  for (const u of urls) {
+    const r = await fetch(u);
+    if (!r.ok) throw new Error(`Download failed: ${u} (${r.status})`);
+    const ct = r.headers.get("content-type") || "application/octet-stream";
+    const nameGuess = decodeURIComponent(u.split("/").pop() || "file");
+    const safe = nameGuess.replace(/[^\w.\-]/g, "_");
+    const buf = Buffer.from(await r.arrayBuffer());
+    const key = `${baseKey}/${safe}`;
+
+    const { s3Put } = await import("../loaders/s3.js"); // reuse your S3 helper
+    const { etag } = await s3Put({ Key: key, Body: buf, ContentType: ct });
+
+    exp.attachments.push({
+      provider: env.STORAGE_VENDOR,
+      bucket: env.S3_BUCKET,
+      key,
+      etag,
+      size: buf.length,
+      contentType: ct,
+      originalName: nameGuess,
+    });
+  }
+
+  await exp.save();
+  return res.json(exp);
+});
+
 
 // --- Signed download URL for one attachment ---
 router.get("/:id/attachments/:attId/url", requireAuth, async (req, res) => {
