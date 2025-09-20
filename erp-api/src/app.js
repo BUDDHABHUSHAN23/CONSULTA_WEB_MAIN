@@ -33,6 +33,8 @@ app.get("/api/health", (_req, res) =>
 app.post("/api/dev-login", devLogin);
 
 // mount features
-app.use("/api/v1/expenses", expensesRouter);
+app.use("/api/expenses", expensesRouter);
+
+// app.use("/api/v1/expenses", expensesRouter);
 
 export default app;

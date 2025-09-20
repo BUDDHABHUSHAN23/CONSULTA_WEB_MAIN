@@ -5,9 +5,12 @@ export default function RequireAuth({ children, role }) {
   const s = terSession.load();
   const loc = useLocation();
 
-  if (!s?.token) return <Navigate to="/ter/login" state={{ from: loc }} replace />;
+  // support new { erp: { token } } and legacy { token }
+  const token = s?.erp?.token || s?.token;
+  if (!token) return <Navigate to="/ter/login" state={{ from: loc }} replace />;
 
-  if (role && ![role, "admin"].includes(s.user.role)) {
+  const userRole = s?.erp?.user?.role ?? s?.user?.role;
+  if (role && ![role, "admin"].includes(userRole)) {
     return <Navigate to="/ter/submit" replace />;
   }
   return children;
