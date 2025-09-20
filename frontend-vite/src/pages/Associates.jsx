@@ -124,7 +124,7 @@ const Associates = () => {
                       {[
                         { src: "/logos/siemens.svg", alt: "Siemens" },
                         { src: "/logos/dell.svg", alt: "Dell Technologies" },
-                        { src: "/logos/Cytiva.svg", alt: "Cytiva" },
+                        { src: "/logos/smartsights.svg", alt: "smarthsight" },
                       ].map((logo, i) => (
                         <img
                           key={i}
@@ -145,7 +145,7 @@ const Associates = () => {
                       {[
                         { src: "/logos/siemens.svg", alt: "Siemens" },
                         { src: "/logos/dell.svg", alt: "Dell Technologies" },
-                        { src: "/logos/Cytiva.svg", alt: "Cytiva" },
+                        { src: "/logos/smartsights.svg", alt: "smarthsight" },
                       ].map((logo, i) => (
                         <img
                           key={`dup-${i}`}
