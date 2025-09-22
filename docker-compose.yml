@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  # Reverse proxy + Let's Encrypt (UI at http://<SERVER_LAN_IP>:81)
+  npm:
+    image: jc21/nginx-proxy-manager:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "81:81"
+      - "443:443"
+    environment:
+      TZ: "Asia/Kolkata"
+    volumes:
+      - ./data/npm:/data
+      - ./data/letsencrypt:/etc/letsencrypt
+    depends_on:
+      - fastapi
+
+  fastapi:
+    build:
+      context: ./backend    # 👈 points to folder containing Dockerfile
+      dockerfile: Dockerfile     
+    restart: unless-stopped
+    expose:
+      - "8000"                # internal only
+    environment:
+      - PORT=8000
+      - WEB_CONCURRENCY=2
+      - FRONTEND_URL=https://www.consulta.in
+      - CORS_ORIGINS=https://www.consulta.in,https://consulta.in
+      # add your other envs here (DB_URL, email creds, MinIO keys, etc.)
