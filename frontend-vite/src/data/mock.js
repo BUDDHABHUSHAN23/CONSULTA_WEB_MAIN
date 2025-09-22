@@ -190,10 +190,10 @@ export const companyInfo = {
   },
   social: {
     youtube: "https://www.youtube.com/@YourChannel",
-    instagram: "https://www.instagram.com/yourhandle",
+    instagram: "https://www.instagram.com/consulta_in/",
     linkedin: "https://www.linkedin.com/company/your-company",
     facebook: "https://www.facebook.com/yourpage",
-    twitter: "https://twitter.com/yourhandle",
+    twitter: "https://x.com/consulta_in",
     github: "https://github.com/yourorg",
   },
   solution_partner: solutionPartner,
