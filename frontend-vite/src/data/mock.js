@@ -189,12 +189,12 @@ export const companyInfo = {
     hours: "Mon to Sat : 10.00 AM - 06.00 PM"
   },
   social: {
-    youtube: "https://www.youtube.com/@YourChannel",
+    youtube: "https://www.youtube.com/@Consulta_in",
     instagram: "https://www.instagram.com/consulta_in/",
     linkedin: "https://www.linkedin.com/company/your-company",
     facebook: "https://www.facebook.com/yourpage",
     twitter: "https://x.com/consulta_in",
-    github: "https://github.com/yourorg",
+    threads: "https://www.threads.com/@consulta_in",
   },
   solution_partner: solutionPartner,
   certifications_list: certifications,

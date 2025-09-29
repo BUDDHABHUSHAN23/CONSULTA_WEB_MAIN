@@ -10,8 +10,16 @@ import {
   Linkedin,
   Facebook,
   Twitter,
-  Github,
 } from "lucide-react";
+
+// Thread is not present in the lucide 
+import { SiThreads } from "react-icons/si";
+
+// lucide-like wrapper (accepts size/strokeWidth)
+const Threads = ({ size = 18, strokeWidth = 1.75, ...rest }) => (
+  <SiThreads size={size} {...rest} />
+);
+
 import { companyInfo } from "../data/mock";
 
 const Footer = () => {
@@ -23,7 +31,7 @@ const Footer = () => {
     { key: "linkedin", Icon: Linkedin, label: "LinkedIn" },
     { key: "facebook", Icon: Facebook, label: "Facebook" },
     { key: "twitter", Icon: Twitter, label: "Twitter/X" },
-    { key: "github", Icon: Github, label: "GitHub" },
+    { key: "threads", Icon: Threads, label: "Threads" },
   ];
 
   const socials = companyInfo?.social || {};
@@ -140,12 +148,14 @@ const Footer = () => {
               <h3 className="text-lg font-semibold mb-6">Industries</h3>
               <div className="space-y-3">
                 {[
-                  "Power",
                   "Cement",
                   "Steel",
+                  "Power",
                   "Water",
-                  "Chemical",
+                  "Pharmaceutical",
                   "Food & Beverages",
+                  "Material Handling",
+                  "Oil & Gas",
                 ].map((industry) => (
                   <Link
                     key={industry}
@@ -163,7 +173,7 @@ const Footer = () => {
         {/* Bottom Footer */}
         <div className="border-t border-gray-800 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-gray-400 text-sm">
+            <div className="text-gray-400 text-sm hover:caret-blue-300">
               © {currentYear} {companyInfo.name}. All rights reserved.
             </div>
 

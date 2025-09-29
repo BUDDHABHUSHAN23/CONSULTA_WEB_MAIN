@@ -146,7 +146,7 @@ export default function IndustryDetail() {
                 </Link>
 
                 <a
-                  href={`mailto:hello@consulta.in?subject=Notify%20me%20about%20industry%20page:%20${encodeURIComponent(
+                  href={`mailto:info@consulta.in?subject=Notify%20me%20about%20industry%20page:%20${encodeURIComponent(
                     name
                   )}`}
                   className="apple-button inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium border border-gray-200 hover:bg-gray-50 text-gray-900"
